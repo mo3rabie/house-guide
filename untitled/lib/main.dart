@@ -25,8 +25,8 @@ WidgetsFlutterBinding.ensureInitialized();
           ),
         )
       : Firebase.initializeApp();
-
   await Firebase.initializeApp();
+
 
 // Ideal time to initialize
 //await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
@@ -76,3 +76,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
+// "java.compile.nullAnalysis.mode": "automatic",
+  //  "java.configuration.updateBuildConfiguration": "interactive"

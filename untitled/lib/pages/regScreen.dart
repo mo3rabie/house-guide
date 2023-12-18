@@ -1,11 +1,14 @@
 
+// ignore_for_file: use_build_context_synchronously
+
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_svg/flutter_svg.dart';
 
 class RegScreen extends StatefulWidget {
-  const RegScreen({Key? key}) : super(key: key);
+  const RegScreen({super.key});
 
   @override
   State<RegScreen> createState() => _RegScreenState();
@@ -46,7 +49,7 @@ class _RegScreenState extends State<RegScreen> {
                   fontWeight: FontWeight.bold,
                   color:Color.fromARGB(255,0, 134, 172) ),
                 ),
-                Container(height: 20),
+                Container(height: 30),
                 Padding(padding: 
                 const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
                   child: TextFormField(
@@ -54,14 +57,20 @@ class _RegScreenState extends State<RegScreen> {
                     decoration: InputDecoration(
                        labelText: "UserName",
                       hintText: "Enter your UserName",
-                      contentPadding: EdgeInsets.symmetric(vertical:20,horizontal: 60),
-                      fillColor: Color(0xFFF7F8F8),
+                      contentPadding: const EdgeInsets.symmetric(vertical:20,horizontal: 60),
+                      fillColor: const Color(0xFFF7F8F8),
                       filled: true,
                      isDense: true,
                      border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)
                        
-                      )
+                      ),
+                        enabledBorder:OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(
+                                style: BorderStyle.none
+                            )
+                        )
                     )
                     )
                     ),
@@ -72,37 +81,31 @@ class _RegScreenState extends State<RegScreen> {
                     controller: email,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return "Plz enter email";
+                        return "Pleas enter email";
                       }
                       if (!RegExp(
                               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                           .hasMatch(value)) {
-                        return "plz enter a valid email address";
+                        return "Pleas enter a valid email address";
                       }
                       return null;
                     },
                     decoration: InputDecoration(
                       labelText: "Email",
                       hintText: "Enter your Email",
-                      contentPadding: EdgeInsets.symmetric(vertical:20,horizontal: 60),
-                      prefixIconConstraints: const BoxConstraints(maxWidth: 60),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SizedBox(
-                          width: 30,
-                          child: SvgPicture.asset(
-                            "assets/icons/Message.svg",
-                            width: 20,
-                          ),
-                        ),
-                      ),
-                      fillColor: Color(0xFFF7F8F8),
+                      contentPadding: const EdgeInsets.symmetric(vertical:20,horizontal: 60),
+                      fillColor: const Color(0xFFF7F8F8),
                       filled: true,
                      isDense: true,
                      border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)
-                       
-                      )
+                      ),
+                        enabledBorder:OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(
+                                style: BorderStyle.none
+                            )
+                        )
                     ),
                   ),
                 ),
@@ -114,7 +117,7 @@ class _RegScreenState extends State<RegScreen> {
                     obscureText: isPasswordHidden,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return "Plz enter a password";
+                        return "Pleas enter a password";
                       }
                       if (value.length <= 4) {
                        return "password should be more than 4 char";
@@ -124,6 +127,9 @@ class _RegScreenState extends State<RegScreen> {
                     decoration: InputDecoration(
                       labelText: 'Password',
                      hintText: 'Enter your password',
+                        fillColor: const Color(0xFFF7F8F8),
+                        filled: true,
+                        isDense: true,
                      border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
                      contentPadding: const EdgeInsets.symmetric(vertical:20,horizontal: 60),
@@ -143,7 +149,13 @@ class _RegScreenState extends State<RegScreen> {
                });
                         },
                         
-                      )
+                      ),
+                   enabledBorder:OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(
+                                style: BorderStyle.none
+                            )
+                        )
                     ),
                   ),
                 ),
@@ -167,7 +179,7 @@ class _RegScreenState extends State<RegScreen> {
                           Color.fromARGB(255,0, 134, 172),
                         ],
                       ),
-                      color: Color.fromARGB(255,0, 134, 172),
+                      color: const Color.fromARGB(255,0, 134, 172),
                       borderRadius: BorderRadius.circular(60),
                     ),
                     child: ElevatedButton(
@@ -186,21 +198,30 @@ class _RegScreenState extends State<RegScreen> {
                             MaterialStateProperty.all(Colors.transparent),
                       ),
                       onPressed: () async {
-                        try {
-                            final credential = await FirebaseAuth.instance
+                        if (_formKey.currentState!.validate()){
+                           try {
+                          
+                          await FirebaseAuth.instance
                                 .createUserWithEmailAndPassword(
                               email: email.text,
                               password: password.text,
                             );Navigator.of(context).pushReplacementNamed('home_screen');
                           } on FirebaseAuthException catch (e) {
                             if (e.code == 'weak-password') {
-                              print('The password provided is too weak.');
+                              if (kDebugMode) {
+                                print('The password provided is too weak.');
+                              }
                             } else if (e.code == 'email-already-in-use') {
-                              print(
+                              if (kDebugMode) {
+                                print(
                                   'The account already exists for that email.');
+                              }
                             }
                           } catch (e) {
-                            print(e);
+                            if (kDebugMode) {
+                              print(e);
+                            }
+                          } 
                           }
                       },
                       child: const Padding(
@@ -224,7 +245,7 @@ class _RegScreenState extends State<RegScreen> {
                     onTap: (){
                       Navigator.of(context).pushReplacementNamed("loginScreen");
                     },
-                    child: Center(
+                    child: const Center(
                       child:Text.rich(TextSpan(children:[
                         TextSpan(text: "Have an Account ?"),
                         TextSpan(text: ' Login',style: TextStyle(color:Color.fromARGB(255,0, 134, 172),

@@ -1,28 +1,29 @@
-// ignore_for_file: file_names
-
-import 'dart:convert';
-import "dart:io";
+// ignore: file_names
 import 'dart:io';
-import "package:flutter/material.dart";
-import 'package:http/http.dart' as http;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+class AddHouse extends StatefulWidget {
+  const AddHouse({super.key});
 
-// ignore: must_be_immutable
-class AddHouse extends StatelessWidget {
-  File? myfile;
-  String? ownername;
-  String? phone;
-  String? address;
-  String? photos;
-  String? price;
-  String? desciption;
-  //هتعملي لكل الفيلدز متغير زي كده ده بتاع ال onsaved
-  GlobalKey<FormState> formsstate = GlobalKey();
-  //هنا/// TextEditingController D = TextEditingController();
-  String? textval; //القيمة الهكتبها في الفيلد هتتخزن في المتغير ده
-  AddHouse({super.key});
+  @override
+  // ignore: library_private_types_in_public_api
+  _AddHouseState createState() => _AddHouseState();
+}
 
-  static const screenRoute = '/Add';
+class _AddHouseState extends State<AddHouse> {
+  List<File> _images = [];
+  final picker = ImagePicker();
+  final _formKey = GlobalKey<FormState>();
+
+  String? _houseName;
+  String? _phone;
+  String? _address;
+  String? _price;
+  String? _description;
 
   @override
   Widget build(BuildContext context) {
@@ -31,360 +32,307 @@ class AddHouse extends StatelessWidget {
         elevation: 100.0,
         title: const Text('Add New House'),
         titleTextStyle: const TextStyle(
-            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.menu))],
+        fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         centerTitle: true,
-        backgroundColor: const Color.fromRGBO(33, 150, 243, 1),
+        backgroundColor: const Color.fromARGB(255, 0, 134, 172),
       ),
-
-      body: Container(
-          color: const Color.fromARGB(255, 247, 246, 246),
-          padding: const EdgeInsets.all(10),
-          child: Form(
-            key: formsstate,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Image.asset(
+                    "asset/images/logo.png",
+                    height: 200,),
+                if (_images.isNotEmpty)
+                  SizedBox(
+                    height: 150,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _images.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.file(
+                            _images[index],
+                            height: 100,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ElevatedButton(
+                  onPressed: () {
+                    _pickImages();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 0, 134, 172), // Set button color to blue
+                  ),
+                  child: const Text(
+                    'Pick Images',
+                    style: TextStyle(color: Colors.white), // Set text color to white
+                  ),
+                ),
+                Container(height: 30),
+
                 TextFormField(
                   validator: (value) {
-                    if (value!.isEmpty) {
-                      return " the feild is Empty";
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter House Name';
                     }
                     if (value.length < 3) {
-                      return "The name cannot be less than 3";
-                    }
+                        return "The name cannot be less than 3";
+                      }
+                    return null;
                   },
-                  maxLines: 1,
-                  maxLength: 12,
-                  keyboardType: TextInputType.name,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                      // borderRadius: BorderRadius.circular(40),
+                    maxLines: 1,
+                    maxLength: 30,
+                    keyboardType: TextInputType.name,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 2)),
+                      fillColor: Colors.white,
+                      filled: true,
+                      suffixIcon: Icon(Icons.person),
+                      suffixIconColor: Color.fromARGB(255, 0, 134, 172),
+                      labelText: "House Name",
+                      labelStyle: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white, width: 2)),
-                    //icon: Icon(Icons.person),
-                    fillColor: Colors.white,
-                    filled: true,
-                    suffixIcon: Icon(Icons.person),
-                    suffixIconColor: Colors.blue,
-                    labelText: "Owner Name",
-                    labelStyle: TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 14,
-                    ), //fontWeight: FontWeight.bold),
-                    hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
-                  ),
-                  //هنا//controller: D,
-                  onSaved: (val) {
-                    ownername = val; //اعطيناه القيمة val
-                    //كده اي قيمة هكتبها في الفيلد هتتخزن في textval
+                  onSaved: (value) {
+                    _houseName = value;
                   },
                 ),
-
                 TextFormField(
                   validator: (value) {
-                    if (value!.isEmpty) {
-                      return " the feild is Empty";
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter phone number';
                     }
                     if (value.length < 11) {
-                      return "The name cannot be less than 11";
+                        return "The name cannot be less than 11";
+                      }
+                   if (value.length > 11) {
+                        return "The name cannot be more than 11";
+                      }
+                    return null;
+                  },
+                    maxLines: 1,
+                    maxLength: 11,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 2)),
+                      fillColor: Colors.white,
+                      filled: true,
+                      suffixIcon: Icon(Icons.call),
+                      suffixIconColor: Color.fromARGB(255, 0, 134, 172),
+                      labelText: "Phone",
+                      labelStyle: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  onSaved: (value) {
+                    _phone = value;
+                  },
+                ),
+                TextFormField(
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter address';
                     }
-                    if (value.length > 11) {
-                      return "The name cannot be more than 11";
-                    }
+                    return null;
                   },
                   maxLines: 1,
-                  maxLength: 11,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                      // borderRadius: BorderRadius.circular(40)
+                  maxLength: 40,
+                    keyboardType: TextInputType.streetAddress,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 2)),
+                      fillColor: Colors.white,
+                      filled: true,
+                      suffixIcon: Icon(Icons.location_on),
+                      suffixIconColor: Color.fromARGB(255, 0, 134, 172),
+                      labelText: "Address",
+                      labelStyle: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
+                      hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white, width: 2)),
-                    //icon: Icon(Icons.person),
-                    fillColor: Colors.white,
-                    filled: true,
-                    suffixIcon: Icon(Icons.call),
-                    suffixIconColor: Colors.blue,
-                    labelText: "Phone",
-                    labelStyle: TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 14,
-                    ), //fontWeight: FontWeight.bold),
-                    hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
-                  ),
-                  //هنا//controller: D,
-
-                  onSaved: (val) {
-                    phone = val; //اعطيناه القيمة val
-                    //كده اي قيمة هكتبها في الفيلد هتتخزن في textval
+                  onSaved: (value) {
+                    _address = value;
                   },
                 ),
-                // هنا //MaterialButton(
-                // color: Colors.blue,
-                // textColor: Colors.white,
-                // onPressed: () {
-                //  print(D.text);
-                // },
-                //  child: Text("Send"),
-                // ),
                 TextFormField(
                   validator: (value) {
-                    if (value!.isEmpty) {
-                      return " the feild is Empty";
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter price';
                     }
-                    //if (value.length < 11) {
-                    // return "The name cannot be less than 11";
-                    //}
-                    // if (value.length > 11) {
-                    // return "The name cannot be more than 11";
-                    // }
-                  },
-                  maxLines: 2,
-                  //maxLength: 30,
-                  keyboardType: TextInputType.streetAddress,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                      // borderRadius: BorderRadius.circular(40)
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white, width: 2)),
-                    //icon: Icon(Icons.person),
-                    fillColor: Colors.white,
-                    filled: true,
-                    suffixIcon: Icon(Icons.location_on),
-                    suffixIconColor: Colors.blue,
-                    labelText: "Address",
-                    labelStyle: TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 14,
-                    ), //fontWeight: FontWeight.bold),
-                    hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
-                  ),
-                  //هنا//controller: D,
-                  onSaved: (val) {
-                    address = val; //اعطيناه القيمة val
-                    //كده اي قيمة هكتبها في الفيلد هتتخزن في textval
-                  },
-                ),
-
-                TextFormField(
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return " the feild is Empty";
-                    }
-                    if (value.length < 1) {
-                      return "The name cannot be less than 1";
-                    }
+                   if (value.length <= 1) {
+                      return "The name cannot be less than or equle 1 ";
+                      }
+                    return null;
                   },
                   maxLines: 1,
-                  maxLength: 6,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                      // borderRadius: BorderRadius.circular(40)
+                    maxLength: 6,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 2)),
+                      fillColor: Colors.white,
+                      filled: true,
+                      suffixIcon: Icon(Icons.price_change),
+                      suffixIconColor: Color.fromARGB(255, 0, 134, 172),
+                      labelText: "Price",
+                      labelStyle: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14,
+                      ),
+                      hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white, width: 2)),
-                    //icon: Icon(Icons.person),
-                    fillColor: Colors.white,
-                    filled: true,
-                    suffixIcon: Icon(Icons.price_change),
-                    suffixIconColor: Colors.blue,
-                    labelText: "Price",
-                    labelStyle: TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 14,
-                    ), //fontWeight: FontWeight.bold),
-                    hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
-                  ),
-                  //هنا//controller: D,
-                  onSaved: (val) {
-                    price = val; //اعطيناه القيمة val
-                    //كده اي قيمة هكتبها في الفيلد هتتخزن في textval
+                    
+                  onSaved: (value) {
+                    _price = value;
                   },
                 ),
                 TextFormField(
                   validator: (value) {
-                    if (value!.isEmpty) {
-                      return " the feild is Empty";
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter description';
                     }
-                    // if (value.length <) {
-                    // return "The name cannot be less than 2";
-                    // }
+                    return null;
                   },
-                  maxLines: 3,
-                  maxLength: 70,
+                  maxLines: 5,
+                  maxLength: 200,
                   keyboardType: TextInputType.text,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.red),
-                      // borderRadius: BorderRadius.circular(40)
                     ),
                     enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white, width: 2)),
-                    //icon: Icon(Icons.person),
+                    borderSide: BorderSide(color: Colors.white, width: 2)),
                     fillColor: Colors.white,
                     filled: true,
-                    //suffixIcon: Icon(Icons.text_fields),
-                    suffixIconColor: Colors.blue,
+                    suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                     labelText: "Desciption",
                     labelStyle: TextStyle(
                       color: Colors.blueGrey,
                       fontSize: 14,
-                    ), //fontWeight: FontWeight.bold),
+                    ),
                     hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
                   ),
-                  //هنا//controller: D,
-                  onSaved: (val) {
-                    desciption = val; //اعطيناه القيمة val
-                    //كده اي قيمة هكتبها في الفيلد هتتخزن في textval
+                  onSaved: (value) {
+                    _description = value;
                   },
                 ),
-                MaterialButton(
-                  color: Colors.white,
-                  textColor: Colors.blue,
-                  onPressed: () {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (context) => Container(
-                            height: 150,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Please choose image ",
-                                    style: TextStyle(fontSize: 22),
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    XFile? xFile = await ImagePicker()
-                                        .pickImage(source: ImageSource.gallery);
-                                    File myfile = File(xFile!.path);
-                                    //فيه هنا exception erorr
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(10),
-                                    child: const Text(
-                                      "from Gallery",
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    XFile? xFile = await ImagePicker()
-                                        .pickImage(source: ImageSource.camera);
-                                    File myfile = File(xFile!.path);
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(10),
-                                    child: const Text(
-                                      " from Camera",
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            )));
-                  },
-                  // ignore: avoid_print
-
-                  child: const Text("Choose image"),
-                ),
-
-                MaterialButton(
-                  color: Colors.blue,
-                  textColor: Colors.white,
-                  onPressed: () {
-                    if (formsstate.currentState!.validate()) {
-                      formsstate.currentState!.save();
-                      print(ownername);
-                      print(phone);
-                      print(address);
-                      print(price);
-                      print(desciption);
-                    } else {
-                      // ignore: avoid_print
-                      print(" not valid");
-                    }
-                  },
-                  // ignore: avoid_print
-                  //child: const Text("not valid"),
-                  child: const Text("Send"),
-
-                  //لما ادوس علي البوتون هيطبعلي القيمة الكتبتها
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 0, 134, 172), // Set button color to blue
+                  ),
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.white), // Set text color to white
+                  ),
                 ),
               ],
             ),
-          )),
-      // body: const Center(
-      // child: Text(
-      // 'Add Your House',
-      //style: TextStyle(
-      //  fontFamily: 'ElMessiri',
-      // fontSize: 24,
-      // fontWeight: FontWeight.bold),
-      //),
-      // ),
+          ),
+        ),
+      ),
     );
   }
 
-  // postRequestWithFile(String url, Map data, File file) async {
-  // var request = http.MultipartRequest("POST", Uri.parse(url));
-  // var length = await file.length();
-  //var stream = http.ByteStream(file.openRead());
-  // var multipartFile = http.MultipartFile("file", stream, length,
-  //     filename: basename(file.path));
-  // request.files.add(multipartFile);
-  // data.forEach((key, value) {
-  // request.fields[key] = value;
-  //  });
-  // var myrequest = await request.send();
-  // var response = await http.Response.fromStream(myrequest);
-  // if (myrequest.statusCode == 200) {
-  //  return jsonDecode(response.body);
-  // } else {
-  //   print("ُErorr ${myrequest.statusCode}");
-  // }
-  //اسم file ده
-  //اسم ال request
-  //لازم نلتزم بنفس الاسم في ال backend بتاع الhttp
-  // }
+  void _pickImages() async {
+    final pickedFiles = await picker.pickMultiImage();
+
+    // ignore: unnecessary_null_comparison
+    if (pickedFiles != null) {
+      setState(() {
+        _images = pickedFiles.map((pickedFile) => File(pickedFile.path)).toList();
+      });
+    }
+  }
+
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate() ) {
+      _formKey.currentState!.save();
+
+      try {
+        // Upload images to Firebase Storage
+        final storage = FirebaseStorage.instance;
+        List<String> imageUrls = [];
+
+        for (var imageFile in _images) {
+          final imageRef = storage.ref().child('images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+          await imageRef.putFile(imageFile);
+          final downloadUrl = await imageRef.getDownloadURL();
+          imageUrls.add(downloadUrl);
+        }
+
+        // Save data to Firestore
+        final db = FirebaseFirestore.instance;
+        final houses = {
+          'name': _houseName,
+          'phone': int.parse(_phone!),
+          'address': _address,
+          'price': int.parse(_price!),
+          'description': _description,
+          'images': imageUrls,
+        };
+
+        await db.collection('houses').doc(_address).collection("houseName").doc(_houseName).set(houses);
+
+        // Clear form and show success message
+        _formKey.currentState?.reset();
+        setState(() {
+          _images = [];
+        });
+
+        
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data submitted successfully!'),
+            backgroundColor: Colors.lightBlueAccent,
+          ),
+        );
+      } catch (error) {
+        if (kDebugMode) {
+          print('Error: $error');
+        }
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error submitting data. Please try again.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 }
-
-//class Test extends StatefulWidget {
-  //Test({required Key key}) : super(key: key);
-
-  //@override
-  ////TestState createState() => TestState();
-//}
-
-//class TestState extends State<Test> {
- // @override
- //// Widget build(BuildContext context) {
-   // return Scaffold(
-     // appBar: AppBar(
-       // title: Text('Upload'),
-     // ),
-///body: Container(),
-   //// );
- // }
-//}

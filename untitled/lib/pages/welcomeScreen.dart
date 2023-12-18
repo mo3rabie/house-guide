@@ -13,6 +13,7 @@ class WelcomeScreen extends StatelessWidget {
           height: double.infinity, 
           width: double.infinity,
           color: Colors.white,
+          child:SingleChildScrollView(
           child: Column(
             children: [
             Container( 
@@ -69,10 +70,12 @@ class WelcomeScreen extends StatelessWidget {
           ),
         )
         ,
+        const SizedBox(height: 30,),
             ],
-
+           
           ),
         ),
+     )
      );
      
   }

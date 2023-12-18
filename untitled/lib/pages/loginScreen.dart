@@ -1,10 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
-import 'package:flutter_svg/flutter_svg.dart';
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+//import 'package:untitled/pages/profile.dart';///////////////////
+
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -45,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 0, 134, 172)),
                   ),
-                  Container(height: 20),
+                  Container(height: 60),
                  
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -54,37 +58,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: email,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Plz enter email";
+                          return "Pleas enter email";
                         }
                         if (!RegExp(
                                 r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                             .hasMatch(value)) {
-                          return "plz enter a valid email address";
+                          return "Pleas enter a valid email address";
                         }
                         return null;
                       },
                       decoration: InputDecoration(
                           labelText: "Email",
                           hintText: "Enter your Email",
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 60),
-                          prefixIconConstraints:
-                              const BoxConstraints(maxWidth: 60),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              width: 30,
-                              child: SvgPicture.asset(
-                                "assets/icons/Message.svg",
-                                width: 20,
-                              ),
-                            ),
-                          ),
-                          fillColor: Color(0xFFF7F8F8),
+                          fillColor: const Color(0xFFF7F8F8),
                           filled: true,
                           isDense: true,
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12))),
+                          contentPadding:  const EdgeInsets.symmetric(vertical: 20, horizontal: 60),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          enabledBorder:OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(
+                              style: BorderStyle.none
+                            )
+                          )
+                      ),
                     ),
                   ),
                   Padding(
@@ -95,16 +92,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: isPasswordHidden,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Plz enter a password";
+                          return "Pleas enter a password";
                         }
                         if (value.length <= 4) {
                           return "password should be more than 4 char";
                         }
-                        return null;
+                        return null;  ////////////////////////////////////////
                       },
                       decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Enter your password',
+                          fillColor: const Color(0xFFF7F8F8),
+                          filled: true,
+                          isDense: true,
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12)),
                           contentPadding: const EdgeInsets.symmetric(
@@ -125,13 +125,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 isPasswordHidden = !isPasswordHidden;
                               });
                             },
-                          )),
+                          ),
+                          enabledBorder:OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(
+                            style: BorderStyle.none
+                        )
+                    )),
                     ),
                   ),
                   Container(
-                    margin:const EdgeInsets.only(top: 10,bottom: 20),
                     alignment: Alignment.topRight,
-                    child: const Text('Forgot Password ?',
+                    child: const Text('Forgot Password ?       ',
                     style: TextStyle(fontSize: 14),),
                     ),
                   const SizedBox(height: 70),
@@ -154,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Color.fromARGB(255, 0, 134, 172),
                           ],
                         ),
-                        color: Color.fromARGB(255, 0, 134, 172),
+                        color:  const Color.fromARGB(255, 0, 134, 172),
                         borderRadius: BorderRadius.circular(60),
                       ),
                       child: ElevatedButton(
@@ -174,20 +179,27 @@ class _LoginScreenState extends State<LoginScreen> {
                               MaterialStateProperty.all(Colors.transparent),
                         ),
                         onPressed: () async {
-                          try {
-                            final credential = await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                                    email: email.text, password: password.text);
-                                    Navigator.of(context).pushReplacementNamed("home_screen");
-                          } on FirebaseAuthException catch (e) {
-                            if (e.code == 'user-not-found') {
-                              print('No user found for that email.');
-                              
-                            } else if (e.code == 'wrong-password') {
-                              print('Wrong password provided for that user.');
+                          if (_formKey.currentState!.validate()) {
+                            try {
+                              await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                  email: email.text,
+                                  password: password.text);
+                              Navigator.of(context).pushReplacementNamed("home_screen");
+                            } on FirebaseAuthException catch (e) {
+                              if (e.code == 'user-not-found') {
+                                if (kDebugMode) {
+                                  print('No user found for that email.');
+                                }
+                              } else if (e.code == 'wrong-password') {
+                                if (kDebugMode) {
+                                  print('Wrong password provided for that user.');
+                                }
+                              }
                             }
                           }
-                        },
+                        },//return profile(email.text,password.text); ////////////////////////
+                  
                         child: const Padding(
                           padding: EdgeInsets.only(
                             top: 10,
@@ -209,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onTap: (){
                       Navigator.of(context).pushReplacementNamed("regScreen");
                     },
-                    child: Center(
+                    child:const  Center(
                       child:Text.rich(TextSpan(children:[
                         TextSpan(text: "Don't have an Account ?"),
                         TextSpan(text: ' Sing up',style: TextStyle(color:Color.fromARGB(255,0, 134, 172),
