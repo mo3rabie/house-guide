@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/pages/home_screen.dart';
 import 'package:untitled/pages/loginScreen.dart';
@@ -35,7 +35,7 @@ WidgetsFlutterBinding.ensureInitialized();
 }
  
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -48,9 +48,13 @@ class _MyAppState extends State<MyApp> {
   .authStateChanges()
   .listen((User? user) {
     if (user == null) {
-      print('>>>>>>>>>>>>>>User is currently signed out!');
+      if (kDebugMode) {
+        print('>>>>>>>>>>>>>>User is currently signed out!');
+      }
     } else {
-      print('>>>>>>>>>>>>>>User is signed in!');
+      if (kDebugMode) {
+        print('>>>>>>>>>>>>>>User is signed in!');
+      }
     }
   });
     super.initState();
@@ -65,12 +69,12 @@ class _MyAppState extends State<MyApp> {
       ),
 
         home: FirebaseAuth.instance.currentUser == null ?
-         WelcomeScreen() : HomeScreen(),  
+         const WelcomeScreen() : const HomeScreen(),  
         routes: {
-          'welcomeScreen': (context) => WelcomeScreen(),
-          'regScreen': (context) => RegScreen(),
-          'loginScreen': (context) => LoginScreen(),
-          'home_screen': (context) => HomeScreen(),
+          'welcomeScreen': (context) => const WelcomeScreen(),
+          'regScreen': (context) => const RegScreen(),
+          'loginScreen': (context) => const LoginScreen(),
+          'home_screen': (context) => const HomeScreen(),
 
         },
     );

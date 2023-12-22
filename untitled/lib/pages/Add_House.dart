@@ -1,4 +1,6 @@
 // ignore: file_names
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:untitled/pages/modules/house.dart';
 class AddHouse extends StatefulWidget {
   const AddHouse({super.key});
 
@@ -18,26 +21,21 @@ class _AddHouseState extends State<AddHouse> {
   List<File> _images = [];
   final picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
-
-  String? _houseName;
-  String? _phone;
-  String? _address;
-  String? _price;
-  String? _description;
-
+  House house = House();
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 100.0,
-        title: const Text('Add New House'),
-        titleTextStyle: const TextStyle(
+        title:  Text('Add New House'),
+        titleTextStyle:  TextStyle(
         fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 0, 134, 172),
+        backgroundColor:  Color.fromARGB(255, 0, 134, 172),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding:  EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -100,7 +98,7 @@ class _AddHouseState extends State<AddHouse> {
                       borderSide: BorderSide(color: Colors.white, width: 2)),
                       fillColor: Colors.white,
                       filled: true,
-                      suffixIcon: Icon(Icons.person),
+                      suffixIcon: Icon(Icons.house_outlined),
                       suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                       labelText: "House Name",
                       labelStyle: TextStyle(
@@ -109,7 +107,7 @@ class _AddHouseState extends State<AddHouse> {
                       ),
                     ),
                   onSaved: (value) {
-                    _houseName = value;
+                    house.name = value;
                   },
                 ),
                 TextFormField(
@@ -137,7 +135,7 @@ class _AddHouseState extends State<AddHouse> {
                       borderSide: BorderSide(color: Colors.white, width: 2)),
                       fillColor: Colors.white,
                       filled: true,
-                      suffixIcon: Icon(Icons.call),
+                      suffixIcon: Icon(Icons.call_end_outlined),
                       suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                       labelText: "Phone",
                       labelStyle: TextStyle(
@@ -146,7 +144,7 @@ class _AddHouseState extends State<AddHouse> {
                       ),
                     ),
                   onSaved: (value) {
-                    _phone = value;
+                    house.phone = value;
                   },
                 ),
                 TextFormField(
@@ -168,7 +166,7 @@ class _AddHouseState extends State<AddHouse> {
                       borderSide: BorderSide(color: Colors.white, width: 2)),
                       fillColor: Colors.white,
                       filled: true,
-                      suffixIcon: Icon(Icons.location_on),
+                      suffixIcon: Icon(Icons.location_on_outlined),
                       suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                       labelText: "Address",
                       labelStyle: TextStyle(
@@ -178,7 +176,7 @@ class _AddHouseState extends State<AddHouse> {
                       hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
                     ),
                   onSaved: (value) {
-                    _address = value;
+                    house.address = value;
                   },
                 ),
                 TextFormField(
@@ -203,7 +201,7 @@ class _AddHouseState extends State<AddHouse> {
                       borderSide: BorderSide(color: Colors.white, width: 2)),
                       fillColor: Colors.white,
                       filled: true,
-                      suffixIcon: Icon(Icons.price_change),
+                      suffixIcon: Icon(Icons.price_check),
                       suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                       labelText: "Price",
                       labelStyle: TextStyle(
@@ -214,7 +212,7 @@ class _AddHouseState extends State<AddHouse> {
                     ),
                     
                   onSaved: (value) {
-                    _price = value;
+                    house.price = value ;
                   },
                 ),
                 TextFormField(
@@ -236,6 +234,7 @@ class _AddHouseState extends State<AddHouse> {
                     borderSide: BorderSide(color: Colors.white, width: 2)),
                     fillColor: Colors.white,
                     filled: true,
+                    suffixIcon: Icon(Icons.description_outlined),
                     suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                     labelText: "Desciption",
                     labelStyle: TextStyle(
@@ -245,7 +244,7 @@ class _AddHouseState extends State<AddHouse> {
                     hintStyle: TextStyle(color: Colors.blue, fontSize: 18),
                   ),
                   onSaved: (value) {
-                    _description = value;
+                    house.description = value;
                   },
                 ),
                 const SizedBox(height: 20),
@@ -278,61 +277,66 @@ class _AddHouseState extends State<AddHouse> {
     }
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() ) {
-      _formKey.currentState!.save();
+Future<void> _submitForm() async {
+  if (_formKey.currentState!.validate()) {
+    _formKey.currentState!.save();
 
-      try {
-        // Upload images to Firebase Storage
-        final storage = FirebaseStorage.instance;
-        List<String> imageUrls = [];
+    try {
+      // Upload images to Firebase Storage
+      final storage = FirebaseStorage.instance;
 
-        for (var imageFile in _images) {
-          final imageRef = storage.ref().child('images/${DateTime.now().millisecondsSinceEpoch}.jpg');
-          await imageRef.putFile(imageFile);
-          final downloadUrl = await imageRef.getDownloadURL();
-          imageUrls.add(downloadUrl);
-        }
+      // Ensure images list is initialized (empty list if it's null)
+      house.images ??= [];
 
-        // Save data to Firestore
-        final db = FirebaseFirestore.instance;
-        final houses = {
-          'name': _houseName,
-          'phone': int.parse(_phone!),
-          'address': _address,
-          'price': int.parse(_price!),
-          'description': _description,
-          'images': imageUrls,
-        };
-
-        await db.collection('houses').doc(_address).collection("houseName").doc(_houseName).set(houses);
-
-        // Clear form and show success message
-        _formKey.currentState?.reset();
-        setState(() {
-          _images = [];
-        });
-
-        
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Data submitted successfully!'),
-            backgroundColor: Colors.lightBlueAccent,
-          ),
-        );
-      } catch (error) {
-        if (kDebugMode) {
-          print('Error: $error');
-        }
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error submitting data. Please try again.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+      for (var imageFile in _images) {
+        final imageRef =
+            storage.ref().child('images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+        await imageRef.putFile(imageFile);
+        final downloadUrl = await imageRef.getDownloadURL();
+        house.images!.add(downloadUrl);
       }
+
+      // Save data to Firestore
+      final db = FirebaseFirestore.instance;
+      // final house = {
+      //   'name': house.name,
+      //   'phone': house.phone,
+      //   'address': house.address,
+      //   'price': house.price,
+      //   'description': house.description,
+      //   'images': List.from(house.images!), // Ensure images is not null
+      // };
+
+      await db.collection('houses').doc(house.address).set(house.toMap());
+
+      // Clear form and show success message
+      _formKey.currentState?.reset();
+      setState(() {
+        _images = [];
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data submitted successfully!'),
+          backgroundColor: Colors.lightBlueAccent,
+        ),
+      );
+      
+      Navigator.pop(context);
+
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error: $error');
+      }
+
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error submitting data. Please try again.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
+}
 }

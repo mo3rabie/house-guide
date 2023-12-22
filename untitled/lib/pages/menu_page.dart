@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:firebase_auth/firebase_auth.dart';
@@ -41,7 +43,7 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.blue,
+        backgroundColor: Color.fromARGB(255,0, 134, 172),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -55,7 +57,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.home_outlined),
                           onPressed: () {
@@ -72,8 +73,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          // style: ButtonStyle(),
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.person_2_outlined),
                           onPressed: () {
@@ -89,7 +88,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.location_on_outlined),
                           onPressed: () {
@@ -115,7 +113,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.bookmark_border),
                           onPressed: () {
@@ -131,7 +128,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.notifications_none_rounded),
                           onPressed: () {
@@ -147,7 +143,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.messenger_outline),
                           onPressed: () {
@@ -173,7 +168,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.settings_outlined),
                           onPressed: () {
@@ -189,7 +183,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.help_outline),
                           onPressed: () {
@@ -205,7 +198,6 @@ class _MenuPageState extends State<MenuPage> {
                     child: Row(
                       children: [
                         IconButton(
-                          splashColor: Colors.blue[800],
                           color: Colors.white,
                           icon: const Icon(Icons.power_settings_new_outlined),
                           onPressed: () async {

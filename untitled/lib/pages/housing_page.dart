@@ -1,8 +1,12 @@
+// ignore_for_file: prefer_const_constructors
+
+import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:untitled/pages/Add_House.dart';
+import "package:untitled/pages/house_details_page.dart";
 import "package:untitled/pages/house_sugg_list.dart";
-import "package:untitled/pages/item_model.dart";
+import "package:untitled/pages/modules/house.dart";
 //import "package:kf_drawer"
 
 class HousingPage extends StatefulWidget {
@@ -19,16 +23,10 @@ class _HousingPageState extends State<HousingPage> {
       backgroundColor: Colors.grey[200],
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.grey[200], //////////////
-        //backgroundColor: const Color.fromARGB(255, 234, 232, 232),
+        backgroundColor: Colors.grey[200],
         elevation: 0.0,
         toolbarHeight: 80.0,
-        leading: const MenuDrawer(), 
-        // InkWell(
-        // onTap: () => ZoomDrawerController().toggle,
-        // child: Icon(Icons.menu),
-        // backgroundColor: Colors.white,
-        
+        leading: const MenuDrawer(),
         actions: [
                   Image.asset(
                     "asset/images/logo1.png",
@@ -52,7 +50,7 @@ class _HousingPageState extends State<HousingPage> {
                   const Icon(
                     Icons.location_on,
                     size: 15,
-                    color: Colors.blue,
+                    color:Color.fromARGB(255,0, 134, 172),
                   ),
                 ]),
           )
@@ -88,12 +86,11 @@ class _HousingPageState extends State<HousingPage> {
               ),
               SearchHousingeWidget(context),
               const SizedBox(
-                height: 20,
+                height: 10,
               ),
-              moreWidget(context, "Near from you"),
-              HouseSuggList("Recommendation for you", Item.recommendation),
+              HouseSuggList("Recommendation for you", ),
               const SizedBox(
-                height: 20,
+                height: 1,
               ),
               ButtonAddHousingeWidget(context),
             ],
@@ -103,36 +100,15 @@ class _HousingPageState extends State<HousingPage> {
     );
   }
 
-  Widget moreWidget(BuildContext context, String text) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          text,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.blue[800],
-          ),
-        ),
-        InkWell(
-          onTap: () {},
-          child: Icon(
-            Icons.more_horiz,
-            color: Colors.blue[800],
-          ),
-        ),
-      ],
-    );
-  }
+  
 
   // ignore: non_constant_identifier_names
   Widget SearchHousingeWidget(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Container(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-        height: 45,
-        width: 330,
+        height: 60,
+        width: 315,
         decoration: BoxDecoration(
             color: Colors.white, borderRadius: BorderRadius.circular(40)),
         child: SingleChildScrollView(
@@ -142,18 +118,18 @@ class _HousingPageState extends State<HousingPage> {
             },
             decoration: InputDecoration(
                 border: InputBorder.none,
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: const Icon(Icons.search, color:Color.fromARGB(255,0, 134, 172)),
                 hintText: "Search address, or places...",
                 hintStyle: TextStyle(
-                  color: Colors.grey[200],
+                  color: Colors.grey[400],
                   fontSize: 13,
                 )),
           ),
         ),
       ),
       Container(
-        height: 45,
-        width: 45,
+        height: 60,
+        width: 60,
         decoration: BoxDecoration(
             color: Colors.white, borderRadius: BorderRadius.circular(18)),
         child: const Icon(Icons.tune, color: Colors.grey),
@@ -172,8 +148,7 @@ class _HousingPageState extends State<HousingPage> {
             ),
           ),
           minimumSize: MaterialStateProperty.all(const Size(330, 50)),
-          backgroundColor: MaterialStateProperty.all(Colors.blue),
-          // elevation: MaterialStateProperty.all(3),
+          backgroundColor: MaterialStateProperty.all(Color.fromARGB(255,0, 134, 172)),
           shadowColor: MaterialStateProperty.all(Colors.blue),
         ),
         onPressed: () {
@@ -202,78 +177,134 @@ class MenuDrawer extends StatelessWidget {
 
       icon: const Icon(
         Icons.menu,
-        color: Colors.blue,
+        size: 50,
+        color:Color.fromARGB(255,0, 134, 172),
       ),
     );
   }
 }
 
 class CustomSearch extends SearchDelegate {
-  List username = ["maryam", "maruuuu", "ma", "logy", "gamal", "layla"];
-  List? filterList;
+  final CollectionReference housesRef =
+      FirebaseFirestore.instance.collection('houses');
 
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
       IconButton(
-          onPressed: () {
-            query = "";
-          },
-          icon: const Icon(Icons.close))
+        onPressed: () {
+          query = "";
+        },
+        icon: const Icon(Icons.close),
+      ),
     ];
   }
 
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-        onPressed: () {
-          close(context, null);
-        },
-        icon: const Icon(Icons.arrow_back));
+      onPressed: () {
+        close(context, null);
+      },
+      icon: const Icon(Icons.arrow_back),
+    );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    return Text("Rusult : $filterList");
-  }
+    return FutureBuilder<QuerySnapshot>(
+      future: housesRef
+          .where('address', isGreaterThanOrEqualTo: query)
+          .where('address', isLessThan: query + 'z')
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
 
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    if (query == "") {
-      return ListView.builder(
-          itemCount: username.length,
-          itemBuilder: (context, i) {
-            return Card(
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        var houses = snapshot.data?.docs ?? [];
+
+        return ListView.builder(
+          itemCount: houses.length,
+          itemBuilder: (context, index) {
+            var house = House.fromMap(houses[index].data() as Map<String, dynamic>);
+            return InkWell(
+              onTap: () {
+                // Navigate to the details page or perform any action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HouseDetailsPage(item: house),
+                  ),
+                );
+              },
+              child: Card(
                 color: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Text(
-                    "${username[i]}",
+                    house.name!,
                     style: const TextStyle(fontSize: 16),
                   ),
-                ));
-          });
-    } else {
-      filterList =
-          username.where((element) => element.startsWith(query)).toList();
-      return ListView.builder(
-          itemCount: filterList!.length,
-          itemBuilder: (context, i) {
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return FutureBuilder<QuerySnapshot>(
+      future: housesRef
+          .where('address', isGreaterThanOrEqualTo: query)
+          .where('address', isLessThan: query + 'z')
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        var houses = snapshot.data?.docs ?? [];
+
+        return ListView.builder(
+          itemCount: houses.length,
+          itemBuilder: (context, index) {
+            var house = House.fromMap(houses[index].data() as Map<String, dynamic>);
             return InkWell(
               onTap: () {
-                showResults(context);
+                // Navigate to the details page or perform any action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HouseDetailsPage(item: house),
+                  ),
+                );
               },
               child: Card(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(18.0),
-                    child: Text(
-                      "${filterList![i]}",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  )),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Text(
+                    house.address!,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
             );
-          });
-    }
+          },
+        );
+      },
+    );
   }
 }

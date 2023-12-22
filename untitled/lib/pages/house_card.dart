@@ -1,11 +1,19 @@
-import 'package:flutter/material.dart';
-import 'package:untitled/pages/item_model.dart';
+// ignore_for_file: prefer_const_constructors
 
+import 'package:flutter/material.dart';
+import 'package:untitled/pages/modules/house.dart';
+import 'package:untitled/pages/house_details_page.dart'; // Import your HouseDetailsPage
 
 class ItemCard extends StatefulWidget {
-   ItemCard(this.item,this.onTap);
-    Item item;
-    Function()? onTap;
+  const ItemCard({
+    required super.key,
+    required this.house,
+    required this.onTap,
+  });
+
+  final House house;
+  final Function() onTap;
+
   @override
   State<ItemCard> createState() => _ItemCardState();
 }
@@ -15,17 +23,34 @@ class _ItemCardState extends State<ItemCard> {
   Widget build(BuildContext context) {
     return Container(
       width: 300.0,
-      margin: EdgeInsets.only(right: 20.0),
+      margin: const EdgeInsets.only(right: 20.0),
       decoration: BoxDecoration(
-        color: Color(0xfcf9f8),
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Colors.white,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.0, 1.0],
+          colors: [
+            Color.fromARGB(159, 105, 146, 157),
+            Color.fromARGB(67, 0, 135, 172),
+          ],
         ),
-    ),
-     child:InkWell(
-        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+          color: Colors.white,
+        ),
+      ),
+      child: InkWell(
+        onTap: () {
+          // Navigate to HouseDetailsPage when the card is tapped
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HouseDetailsPage(item: widget.house),
+            ),
+          );
+        },
         child: Padding(
-          padding: EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,50 +61,56 @@ class _ItemCardState extends State<ItemCard> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.0),
                   color: Colors.grey.shade200,
-                  image: DecorationImage(
-                    image:NetworkImage(widget.item.thumb_url!),
-                    fit: BoxFit.cover,
-                    )
+                  image: widget.house.images!.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(widget.house.images![0]),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
               ),
-              SizedBox(height: 8.0,),
-             Text(
-              widget.item.title!,
-              style:TextStyle( fontSize: 20.0,color: Colors.blue[800]),
-              overflow: TextOverflow.ellipsis,
-             ),
-
-
-           Row(
-            children: [
-            Icon(Icons.location_on,
-            color:Colors.grey,
-            ),
-          Text(
-              widget.item.location!,
-              style:TextStyle(fontWeight: FontWeight.normal, fontSize: 16.0,color: Colors.blueGrey),
-              overflow: TextOverflow.ellipsis,
-             ),
-           ],
-           ),
-            Row(
-             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-             children: [
+              const SizedBox(height: 8.0),
               Text(
-                "${widget.item.price}\$/ Month",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,fontSize: 22.0),
-                  overflow: TextOverflow.ellipsis,
+                widget.house.name!,
+                style: TextStyle(fontSize: 20.0, color: Colors.blue),
+                overflow: TextOverflow.ellipsis,
               ),
-              IconButton(
-                onPressed: (){},
-                 icon: Icon( Icons.favorite_border_outlined),
-                 )
-             ],
-            )
+              Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Colors.grey,
+                  ),
+                  Text(
+                    widget.house.address!,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.normal,
+                        fontSize: 16.0,
+                        color: Colors.blueGrey),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "${widget.house.price} L.E/ Month",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 22.0),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      // Handle bookmark logic here
+                    },
+                    icon: const Icon(Icons.bookmark_add_outlined),
+                  )
+                ],
+              )
             ],
-            ),
           ),
+        ),
       ),
     );
   }
