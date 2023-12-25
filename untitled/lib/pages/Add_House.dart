@@ -3,6 +3,7 @@
 
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -135,7 +136,7 @@ class _AddHouseState extends State<AddHouse> {
                       borderSide: BorderSide(color: Colors.white, width: 2)),
                       fillColor: Colors.white,
                       filled: true,
-                      suffixIcon: Icon(Icons.call_end_outlined),
+                      suffixIcon: Icon(Icons.phone_enabled_outlined),
                       suffixIconColor: Color.fromARGB(255, 0, 134, 172),
                       labelText: "Phone",
                       labelStyle: TextStyle(
@@ -276,13 +277,12 @@ class _AddHouseState extends State<AddHouse> {
       });
     }
   }
-
 Future<void> _submitForm() async {
   if (_formKey.currentState!.validate()) {
     _formKey.currentState!.save();
 
     try {
-      // Upload images to Firebase Storage
+      final db = FirebaseFirestore.instance;
       final storage = FirebaseStorage.instance;
 
       // Ensure images list is initialized (empty list if it's null)
@@ -295,19 +295,25 @@ Future<void> _submitForm() async {
         final downloadUrl = await imageRef.getDownloadURL();
         house.images!.add(downloadUrl);
       }
+            // Convert name and address to lowercase
+      house.name = house.name!.toLowerCase();
+      house.address = house.address!.toLowerCase();
 
-      // Save data to Firestore
-      final db = FirebaseFirestore.instance;
-      // final house = {
-      //   'name': house.name,
-      //   'phone': house.phone,
-      //   'address': house.address,
-      //   'price': house.price,
-      //   'description': house.description,
-      //   'images': List.from(house.images!), // Ensure images is not null
-      // };
+      // Save house data to Firestore
+      final houseDocRef = await db.collection('houses').add(house.toMap());
 
-      await db.collection('houses').doc(house.address).set(house.toMap());
+      // Get the ID of the created house
+      final houseUid = houseDocRef.id;
+
+
+
+      // Update addedHouse field in the user's document
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await db.collection('users').doc(user.uid).update({
+          'addedHouse': FieldValue.arrayUnion([houseUid]),
+        });
+      }
 
       // Clear form and show success message
       _formKey.currentState?.reset();
@@ -321,15 +327,13 @@ Future<void> _submitForm() async {
           backgroundColor: Colors.lightBlueAccent,
         ),
       );
-      
+
       Navigator.pop(context);
 
     } catch (error) {
       if (kDebugMode) {
         print('Error: $error');
       }
-
-      
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error submitting data. Please try again.'),

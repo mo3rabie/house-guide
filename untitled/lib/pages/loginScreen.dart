@@ -1,12 +1,7 @@
-
-// ignore_for_file: use_build_context_synchronously
-
+// ignore_for_file: use_build_context_synchronously, file_names, unused_local_variable, prefer_const_constructors
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-//import 'package:untitled/pages/profile.dart';///////////////////
-
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -50,7 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Color.fromARGB(255, 0, 134, 172)),
                   ),
                   Container(height: 60),
-                 
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 30, vertical: 16),
@@ -73,15 +67,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           fillColor: const Color(0xFFF7F8F8),
                           filled: true,
                           isDense: true,
-                          contentPadding:  const EdgeInsets.symmetric(vertical: 20, horizontal: 60),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          enabledBorder:OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: const BorderSide(
-                              style: BorderStyle.none
-                            )
-                          )
-                      ),
+                          prefixIcon: Icon(Icons.email_outlined),
+                          prefixIconColor: Color.fromARGB(255, 0, 134, 172),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 20, horizontal: 60),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                                  const BorderSide(style: BorderStyle.none))),
                     ),
                   ),
                   Padding(
@@ -97,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value.length <= 4) {
                           return "password should be more than 4 char";
                         }
-                        return null;  ////////////////////////////////////////
+                        return null; ////////////////////////////////////////
                       },
                       decoration: InputDecoration(
                           labelText: 'Password',
@@ -111,13 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               vertical: 20, horizontal: 60),
                           prefixIconConstraints:
                               const BoxConstraints(minWidth: 20),
+                          prefixIconColor: Color.fromARGB(255, 0, 134, 172),
                           prefixIcon: IconButton(
                             icon: Icon(
                               // Based on passwordVisible state choose the icon
                               isPasswordHidden
                                   ? Icons.visibility
                                   : Icons.visibility_off,
-                              color: Theme.of(context).primaryColorDark,
                             ),
                             onPressed: () {
                               // Update the state i.e. toogle the state of passwordVisible variable
@@ -126,19 +121,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                           ),
-                          enabledBorder:OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(
-                            style: BorderStyle.none
-                        )
-                    )),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                                  const BorderSide(style: BorderStyle.none))),
                     ),
                   ),
                   Container(
                     alignment: Alignment.topRight,
-                    child: const Text('Forgot Password ?       ',
-                    style: TextStyle(fontSize: 14),),
+                    child: const Text(
+                      'Forgot Password ?       ',
+                      style: TextStyle(fontSize: 14),
                     ),
+                  ),
                   const SizedBox(height: 70),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -159,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Color.fromARGB(255, 0, 134, 172),
                           ],
                         ),
-                        color:  const Color.fromARGB(255, 0, 134, 172),
+                        color: const Color.fromARGB(255, 0, 134, 172),
                         borderRadius: BorderRadius.circular(60),
                       ),
                       child: ElevatedButton(
@@ -174,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               MaterialStateProperty.all(const Size(330, 50)),
                           backgroundColor:
                               MaterialStateProperty.all(Colors.transparent),
-                          // elevation: MaterialStateProperty.all(3),
                           shadowColor:
                               MaterialStateProperty.all(Colors.transparent),
                         ),
@@ -183,9 +177,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             try {
                               await FirebaseAuth.instance
                                   .signInWithEmailAndPassword(
-                                  email: email.text,
-                                  password: password.text);
-                              Navigator.of(context).pushReplacementNamed("home_screen");
+                                      email: email.text,
+                                      password: password.text);
+                              Navigator.of(context)
+                                  .pushReplacementNamed("home_screen");
                             } on FirebaseAuthException catch (e) {
                               if (e.code == 'user-not-found') {
                                 if (kDebugMode) {
@@ -193,13 +188,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               } else if (e.code == 'wrong-password') {
                                 if (kDebugMode) {
-                                  print('Wrong password provided for that user.');
+                                  print(
+                                      'Wrong password provided for that user.');
                                 }
                               }
                             }
                           }
-                        },//return profile(email.text,password.text); ////////////////////////
-                  
+                        },
                         child: const Padding(
                           padding: EdgeInsets.only(
                             top: 10,
@@ -209,7 +204,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             "Login",
                             style: TextStyle(
                               fontSize: 18,
-                              // fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
                           ),
@@ -218,18 +212,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   InkWell(
-                    onTap: (){
+                    onTap: () {
                       Navigator.of(context).pushReplacementNamed("regScreen");
                     },
-                    child:const  Center(
-                      child:Text.rich(TextSpan(children:[
-                        TextSpan(text: "Don't have an Account ?"),
-                        TextSpan(text: ' Sing up',style: TextStyle(color:Color.fromARGB(255,0, 134, 172),
-                        fontWeight:FontWeight.bold,))   ],
+                    child: const Center(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(text: "Don't have an Account ?"),
+                            TextSpan(
+                                text: ' Sing up',
+                                style: TextStyle(
+                                  color: Color.fromARGB(255, 0, 134, 172),
+                                  fontWeight: FontWeight.bold,
+                                ))
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
                 ],
               ),
             ),

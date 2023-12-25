@@ -6,6 +6,7 @@ import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:untitled/pages/Add_House.dart';
 import "package:untitled/pages/house_details_page.dart";
 import "package:untitled/pages/house_sugg_list.dart";
+import "package:untitled/pages/lowest_price_page.dart";
 import "package:untitled/pages/modules/house.dart";
 //import "package:kf_drawer"
 
@@ -18,42 +19,27 @@ class HousingPage extends StatefulWidget {
 
 class _HousingPageState extends State<HousingPage> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[300],
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.grey[200],
+        backgroundColor: Colors.grey[300],
         elevation: 0.0,
         toolbarHeight: 80.0,
         leading: const MenuDrawer(),
         actions: [
-                  Image.asset(
-                    "asset/images/logo1.png",
-                  ),
-          Container(
-            margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.symmetric(horizontal: 1),
-            width: 80,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(20)),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Location",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[400],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.location_on,
-                    size: 15,
-                    color:Color.fromARGB(255,0, 134, 172),
-                  ),
-                ]),
-          )
+          SizedBox(
+            width: MediaQuery.of(context).size.width * .97,
+            child: Image.asset(
+              "asset/images/logo1.png",
+            ),
+          ),
         ],
       ),
       body: Padding(
@@ -88,9 +74,9 @@ class _HousingPageState extends State<HousingPage> {
               const SizedBox(
                 height: 10,
               ),
-              HouseSuggList("Recommendation for you", ),
+              HouseSuggList("Recommendation for you"),
               const SizedBox(
-                height: 1,
+                height: 10,
               ),
               ButtonAddHousingeWidget(context),
             ],
@@ -99,8 +85,6 @@ class _HousingPageState extends State<HousingPage> {
       ),
     );
   }
-
-  
 
   // ignore: non_constant_identifier_names
   Widget SearchHousingeWidget(BuildContext context) {
@@ -118,7 +102,8 @@ class _HousingPageState extends State<HousingPage> {
             },
             decoration: InputDecoration(
                 border: InputBorder.none,
-                prefixIcon: const Icon(Icons.search, color:Color.fromARGB(255,0, 134, 172)),
+                prefixIcon: const Icon(Icons.search,
+                    color: Color.fromARGB(255, 0, 134, 172)),
                 hintText: "Search address, or places...",
                 hintStyle: TextStyle(
                   color: Colors.grey[400],
@@ -132,7 +117,12 @@ class _HousingPageState extends State<HousingPage> {
         width: 60,
         decoration: BoxDecoration(
             color: Colors.white, borderRadius: BorderRadius.circular(18)),
-        child: const Icon(Icons.tune, color: Colors.grey),
+        child: InkWell(
+          onTap: () {
+            _showFilterDialog(context); // Show the filter dialog
+          },
+          child: const Icon(Icons.tune, color: Colors.grey),
+        ),
       ),
     ]);
   }
@@ -142,18 +132,14 @@ class _HousingPageState extends State<HousingPage> {
     return Center(
       child: ElevatedButton(
         style: ButtonStyle(
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(60.0),
-            ),
-          ),
           minimumSize: MaterialStateProperty.all(const Size(330, 50)),
-          backgroundColor: MaterialStateProperty.all(Color.fromARGB(255,0, 134, 172)),
+          backgroundColor:
+              MaterialStateProperty.all(Color.fromARGB(255, 0, 134, 172)),
           shadowColor: MaterialStateProperty.all(Colors.blue),
         ),
         onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const AddHouse()));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const AddHouse()));
         },
         child: const Text(
           "Add House",
@@ -162,6 +148,55 @@ class _HousingPageState extends State<HousingPage> {
       ),
     );
   }
+}
+
+Future<void> _showFilterDialog(BuildContext context) async {
+  return showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Filter Options'),
+        alignment: Alignment.center,
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildFilterOption(
+              context,
+              'Lowest Price',
+              () {
+                Navigator.pop(context); // Close the dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LowestPricedHousesPage(),
+                  ),
+                );
+              },
+            ),
+            // Add more filter options as needed
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildFilterOption(
+    BuildContext context, String title, VoidCallback onPressed) {
+  return InkWell(
+    onTap: onPressed,
+    child: Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: Colors.blue, // Customize the text color
+          fontSize: 18,
+        ),
+      ),
+    ),
+  );
 }
 
 class MenuDrawer extends StatelessWidget {
@@ -177,8 +212,8 @@ class MenuDrawer extends StatelessWidget {
 
       icon: const Icon(
         Icons.menu,
-        size: 50,
-        color:Color.fromARGB(255,0, 134, 172),
+        size: 40,
+        color: Color.fromARGB(255, 0, 134, 172),
       ),
     );
   }
@@ -215,7 +250,7 @@ class CustomSearch extends SearchDelegate {
     return FutureBuilder<QuerySnapshot>(
       future: housesRef
           .where('address', isGreaterThanOrEqualTo: query)
-          .where('address', isLessThan: query + 'z')
+          .where('address', isLessThan: '${query}z')
           .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -231,7 +266,8 @@ class CustomSearch extends SearchDelegate {
         return ListView.builder(
           itemCount: houses.length,
           itemBuilder: (context, index) {
-            var house = House.fromMap(houses[index].data() as Map<String, dynamic>);
+            var house =
+                House.fromMap(houses[index].data() as Map<String, dynamic>);
             return InkWell(
               onTap: () {
                 // Navigate to the details page or perform any action
@@ -264,7 +300,7 @@ class CustomSearch extends SearchDelegate {
     return FutureBuilder<QuerySnapshot>(
       future: housesRef
           .where('address', isGreaterThanOrEqualTo: query)
-          .where('address', isLessThan: query + 'z')
+          .where('address', isLessThan: '${query}z')
           .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -280,7 +316,8 @@ class CustomSearch extends SearchDelegate {
         return ListView.builder(
           itemCount: houses.length,
           itemBuilder: (context, index) {
-            var house = House.fromMap(houses[index].data() as Map<String, dynamic>);
+            var house =
+                House.fromMap(houses[index].data() as Map<String, dynamic>);
             return InkWell(
               onTap: () {
                 // Navigate to the details page or perform any action

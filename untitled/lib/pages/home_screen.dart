@@ -11,7 +11,7 @@ class HomeScreen extends StatelessWidget {
     return const Scaffold(
       backgroundColor: Color.fromARGB(255,0, 134, 172),
       body: ZoomDrawer(
-        angle: 0.0,
+        // angle: 0.0,
         mainScreen: HousingPage(),
         menuScreen: MenuPage(),
       ),

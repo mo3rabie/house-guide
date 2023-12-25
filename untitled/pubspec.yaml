@@ -44,6 +44,7 @@ dependencies:
   flutter_svg: ^2.0.9
   flutter_zoom_drawer: ^3.0.2
   image_picker: ^1.0.4
+  provider: ^6.1.1
   
 
 
@@ -75,6 +76,7 @@ flutter:
   assets:
     - asset/images/logo.png
     - asset/images/logo1.png
+    - asset/images/person.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -3,6 +3,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:firebase_auth/firebase_auth.dart';
+import "package:untitled/pages/profile.dart";
 
 
 class MenuPage extends StatefulWidget {
@@ -76,7 +77,7 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.person_2_outlined),
                           onPressed: () {
-                            // Navigator.push(context, MaterialPageRoute(builder: (context)=> profile()));
+                           Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfilePage()));
                           },
                         ),
                         const Text('Profile', style: TextStyle(color: Colors.white)),

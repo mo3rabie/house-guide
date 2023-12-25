@@ -7,7 +7,7 @@ import 'package:untitled/pages/house_card.dart';
 import 'package:untitled/pages/modules/house.dart';
 
 class HouseSuggList extends StatefulWidget {
-  const HouseSuggList(this.title,  {super.key});
+  const HouseSuggList(this.title, {super.key});
   final String? title;
 
   @override
@@ -44,24 +44,29 @@ class _HouseSuggListState extends State<HouseSuggList> {
                 Text(
                   widget.title!,
                   style: const TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 18.0,
-                  color:Color.fromARGB(255,0, 134, 172)),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                      color: Color.fromARGB(255, 0, 134, 172)),
                 ),
                 const SizedBox(width: 70.0),
-                TextButton(onPressed: () {Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AllHousesPage()),
-    );}, child: const Text("See All"))
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AllHousesPage()),
+                      );
+                    },
+                    child: const Text("See All"))
               ],
             ),
           ],
         ),
         const SizedBox(
-          height: 12.0,
+          height: 1.0,
         ),
         SizedBox(
-          height: 340.0,
+          height: 450.0,
           width: double.infinity,
           child: StreamBuilder<QuerySnapshot>(
             stream: _dataStream,
@@ -86,13 +91,14 @@ class _HouseSuggListState extends State<HouseSuggList> {
                 itemBuilder: (context, index) {
                   return Column(
                     children: [
-                      // Assuming ItemCard takes a House model as a parameter
                       ItemCard(
-                            house: House.fromMap(houses[index].data() as Map<String, dynamic>),
-                                 onTap: () {}, key: null,
-                                   ),
+                        house: House.fromMap(
+                            houses[index].data() as Map<String, dynamic>),
+                        onTap: () {},
+                        key: null,
+                      ),
                       const SizedBox(
-                        height: 16.0,
+                        height: 30.0,
                       ),
                     ],
                   );
@@ -105,5 +111,3 @@ class _HouseSuggListState extends State<HouseSuggList> {
     );
   }
 }
-
-

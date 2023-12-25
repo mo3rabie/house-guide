@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:untitled/pages/full_screen_image_page.dart';
 import 'package:untitled/pages/modules/house.dart';
 
 class HouseDetailsPage extends StatelessWidget {
@@ -34,22 +35,35 @@ class HouseDetailsPage extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       itemCount: item.images!.length,
                       itemBuilder: (context, index) {
-                        return Container(
-                          width: 380.0,
-                          margin: const EdgeInsets.only(right: 16.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            color: Colors.grey.shade200,
-                            image: DecorationImage(
-                              image: NetworkImage(item.images![index]),
-                              fit: BoxFit.cover,
+                        return GestureDetector(
+                          onTap: () {
+                            // Navigate to the FullScreenImagePage when image is tapped
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FullScreenImagePage(imageUrl: item.images![index]),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 380.0,
+                            margin: const EdgeInsets.only(right: 16.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20.0),
+                              color: Colors.grey.shade200,
+                              image: DecorationImage(
+                                image: NetworkImage(item.images![index]),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         );
-                      },
-                    ),
+                       },
+                      
+                       ), 
+                      
+                       ),
                   ),
-                ),
                 const SizedBox(height: 30.0),
                 Row(
                   children: [
@@ -57,7 +71,7 @@ class HouseDetailsPage extends StatelessWidget {
                       'Name: ${item.name}',
                       style: TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold, color:Color.fromARGB(255,0, 134, 172)),
                     ),
-                    const SizedBox(width: 150.0),
+                    const SizedBox(width: 100.0),
                     Transform.scale(
                       scale: 1.5,
                       child: Icon(Icons.bookmark_add_outlined, color: Colors.black, size: 32.0),

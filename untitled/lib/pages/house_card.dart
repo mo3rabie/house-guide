@@ -79,7 +79,7 @@ class _ItemCardState extends State<ItemCard> {
                 children: [
                   const Icon(
                     Icons.location_on,
-                    color: Colors.grey,
+                    color: Colors.blueGrey,
                   ),
                   Text(
                     widget.house.address!,

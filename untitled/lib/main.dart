@@ -2,14 +2,18 @@
 
 
 
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:untitled/pages/home_screen.dart';
 import 'package:untitled/pages/loginScreen.dart';
+import 'package:untitled/pages/modules/user_profile_provider.dart';
 import 'package:untitled/pages/regScreen.dart';
 import 'package:untitled/pages/welcomeScreen.dart';
 void main() async {
@@ -26,12 +30,13 @@ WidgetsFlutterBinding.ensureInitialized();
         )
       : Firebase.initializeApp();
   await Firebase.initializeApp();
-
-
-// Ideal time to initialize
-//await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
   
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => UserProfileProvider(),
+      child: MyApp(),
+    ),
+  ); 
 }
  
 class MyApp extends StatefulWidget {
@@ -80,6 +85,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-// "java.compile.nullAnalysis.mode": "automatic",
-  //  "java.configuration.updateBuildConfiguration": "interactive"
