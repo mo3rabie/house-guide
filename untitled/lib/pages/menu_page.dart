@@ -1,10 +1,15 @@
 // ignore_for_file: prefer_const_constructors
 
+import "dart:async";
+import "dart:io";
+
+import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:untitled/pages/chats_list_page.dart';
+import "package:untitled/pages/housing_page.dart";
 import "package:untitled/pages/profile.dart";
-
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -12,48 +17,108 @@ class MenuPage extends StatefulWidget {
   @override
   State<MenuPage> createState() => _MenuPageState();
 }
-/*class MenuOptions{
-  static const home = MenuOption( Icons.home_outlined, "Home");
-  static const profile = MenuOption(Icons.person_2_outlined, "Profile");
-  static const nearby = MenuOption(Icons.location_on_outlined, "Nearby");
-
-  static const bookmark = MenuOption(Icons.bookmark_border, "Bookmark");
-  static const notification = MenuOption(Icons.notifications_none_rounded, "Notification");
-  static const message = MenuOption(Icons.messenger_outline, "Message");
-
-  static const setting = MenuOption(Icons.settings_outlined, "Setting");
-  static const help = MenuOption(Icons.help_outline, "Help");
-  static const logout = MenuOption(Icons.power_settings_new_outlined, "Logout");
-
-  static const allOptions =[
-   home,
-   profile,
-   nearby,
-   bookmark,
-   notification,
-   message,
-   setting,
-   help,
-   logout,
-  ];
-
-}
-*/
 
 class _MenuPageState extends State<MenuPage> {
+  late User? user; // Make the user nullable
+  Map<String, dynamic>? userData;
+  File? _image;
+  late Completer<void> _fetchUserDataCompleter;
+  String hoveredOption = '';
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDataCompleter = Completer<void>();
+    getUser();
+  }
+
+  Future<void> getUser() async {
+    user = FirebaseAuth.instance.currentUser;
+    await fetchUserData(); // Call fetchUserData after retrieving the user
+    _fetchUserDataCompleter.complete(); // Complete the future
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user!.uid)
+              .get();
+
+      setState(() {
+        userData = userDoc.data();
+        userData?['username'] ?? '';
+        userData?['profilePicture'] ?? '';
+      });
+    } finally {
+      if (!_fetchUserDataCompleter.isCompleted) {
+        _fetchUserDataCompleter.complete();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color.fromARGB(255,0, 134, 172),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                
-                ///////////////////////////////////////////////////////////
+      backgroundColor: Color.fromARGB(255, 0, 134, 172),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Profile Section
+              FutureBuilder<void>(
+                future: _fetchUserDataCompleter.future,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    // Show a loading indicator while waiting for user data
+                    return CircularProgressIndicator();
+                  } else {
+                    if (user != null) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ProfilePage()),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 50.0,
+                                backgroundImage: _image != null
+                                    ? FileImage(_image!)
+                                    : (userData != null && userData?['profilePicture'] != null)
+                                        ? NetworkImage(userData?['profilePicture'])
+                                        : const AssetImage('asset/images/person.jpg')
+                                            as ImageProvider<Object>?,
+                              ),
+                              const SizedBox(width: 10.0),
+                              Text(
+                                userData?['username'] ?? user!.displayName ?? 'Guest',
+                                style: TextStyle(fontSize: 15, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Handle the case where the user is null
+                      return Container(
+                        padding: EdgeInsets.all(10.0),
+                        child: Text(
+                          'You are not logged in.', // Customize this message
+                          style: TextStyle(color: Colors.white),
+          ),
+        );
+      }
+    }
+  },
+),
+
+
                 Padding(
-                  
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -62,13 +127,16 @@ class _MenuPageState extends State<MenuPage> {
                           icon: const Icon(Icons.home_outlined),
                           onPressed: () {
                             ZoomDrawer.of(context)!.toggle();
-                            //Navigator.push(context, MaterialPageRoute(builder: (context)=> HousingPage()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => HousingPage()));
                           },
                         ),
-                        const Text('Home', style: TextStyle(color: Colors.white)),
+                        const Text('Home',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
-                ///////////////////////////////////////////////////////////////////////
                 Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
@@ -77,28 +145,17 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.person_2_outlined),
                           onPressed: () {
-                           Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfilePage()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ProfilePage()));
                           },
                         ),
-                        const Text('Profile', style: TextStyle(color: Colors.white)),
+                        const Text('Profile',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
-                ///////////////////////////////////////////////////////////
-                Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          color: Colors.white,
-                          icon: const Icon(Icons.location_on_outlined),
-                          onPressed: () {
-                            // Handle button press
-                          },
-                        ),
-                        const Text('Nearby', style: TextStyle(color: Colors.white)),
-                      ],
-                    )),
-                  
+
                 SizedBox(
                   height: 1, // Adjust the height of the line
                   width: double
@@ -107,8 +164,6 @@ class _MenuPageState extends State<MenuPage> {
                     color: Colors.grey[200], // Set the color of the line
                   ),
                 ),
-                  
-                //////////////////////////////////////////////////
                 Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
@@ -117,28 +172,16 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.bookmark_border),
                           onPressed: () {
-                            // Handle button press
+                            Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) =>  ChatListPage()),
+                        );
                           },
                         ),
-                        const Text('Bookmark', style: TextStyle(color: Colors.white)),
+                        const Text('Bookmark',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
-                ////  ////////////////////////////////////////////////////////////////////
-                Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          color: Colors.white,
-                          icon: const Icon(Icons.notifications_none_rounded),
-                          onPressed: () {
-                            // Handle button press
-                          },
-                        ),
-                        const Text('Notification', style: TextStyle(color: Colors.white)),
-                      ],
-                    )),
-                ///////////////////////////////////////////////////////////////////////
                 Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
@@ -147,10 +190,14 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.messenger_outline),
                           onPressed: () {
-                            // Handle button press
+                            Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) =>  ChatListPage()),
+                        );
                           },
                         ),
-                        const Text('Message', style: TextStyle(color: Colors.white)),
+                        const Text('Message',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
                 ////////////////////////////////////////////////////////////////
@@ -162,7 +209,7 @@ class _MenuPageState extends State<MenuPage> {
                     color: Colors.grey[200], // Set the color of the line
                   ),
                 ),
-                  
+
                 //////////////////////////////////////////////////
                 Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -175,7 +222,8 @@ class _MenuPageState extends State<MenuPage> {
                             // Handle button press
                           },
                         ),
-                        const Text('Settings', style: TextStyle(color: Colors.white)),
+                        const Text('Settings',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
                 ////  ////////////////////////////////////////////////////////////////////
@@ -190,7 +238,8 @@ class _MenuPageState extends State<MenuPage> {
                             // Handle button press
                           },
                         ),
-                        const Text('Help', style: TextStyle(color: Colors.white)),
+                        const Text('Help',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
                 ///////////////////////////////////////////////////////////////////////
@@ -208,27 +257,15 @@ class _MenuPageState extends State<MenuPage> {
                                 "welcomeScreen", (route) => false);
                           },
                         ),
-                        const Text('Logout', style: TextStyle(color: Colors.white)),
+                        const Text('Logout',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     )),
-                  
-                // ...MenuOptions.allOptions.map(optionsList).toList()
               ],
             ),
           ),
         ));
   }
-  /* Widget optionsList(MenuOption item){
-    return ListTile(
-    leading: Icon(     ///mmkal akhlihaa actions
-      item.IconButton,
-      color:Colors.white,
-    ),
-    title: Text(item.title,style: TextStyle(color: Colors.white70)),
-    minLeadingWidth: 10,
-    
-       
-    },
-    );
-  }*/
+
 }
+

@@ -46,87 +46,87 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Container(height: 60),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 16),
-                    child: TextFormField(
-                      controller: email,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Pleas enter email";
-                        }
-                        if (!RegExp(
-                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                            .hasMatch(value)) {
-                          return "Pleas enter a valid email address";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                          labelText: "Email",
-                          hintText: "Enter your Email",
-                          fillColor: const Color(0xFFF7F8F8),
-                          filled: true,
-                          isDense: true,
-                          prefixIcon: Icon(Icons.email_outlined),
-                          prefixIconColor: Color.fromARGB(255, 0, 134, 172),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 60),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide:
-                                  const BorderSide(style: BorderStyle.none))),
-                    ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+                  child: TextFormField(
+                    controller: email,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Pleas enter email";
+                      }
+                      if (!RegExp(
+                              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                          .hasMatch(value)) {
+                        return "Pleas enter a valid email address";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                        labelText: "Email",
+                        hintText: "Enter your Email",
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 60),
+                        fillColor: const Color(0xFFF7F8F8),
+                        filled: true,
+                        isDense: true,
+                        prefixIcon: Icon(Icons.email_outlined),
+                        prefixIconColor: Color.fromARGB(255, 0, 134, 172),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                                const BorderSide(style: BorderStyle.none))),
                   ),
+                ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 16),
-                    child: TextFormField(
-                      controller: password,
-                      obscureText: isPasswordHidden,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Pleas enter a password";
-                        }
-                        if (value.length <= 4) {
-                          return "password should be more than 4 char";
-                        }
-                        return null; ////////////////////////////////////////
-                      },
-                      decoration: InputDecoration(
-                          labelText: 'Password',
-                          hintText: 'Enter your password',
-                          fillColor: const Color(0xFFF7F8F8),
-                          filled: true,
-                          isDense: true,
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 60),
-                          prefixIconConstraints:
-                              const BoxConstraints(minWidth: 20),
-                          prefixIconColor: Color.fromARGB(255, 0, 134, 172),
-                          prefixIcon: IconButton(
-                            icon: Icon(
-                              // Based on passwordVisible state choose the icon
-                              isPasswordHidden
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              // Update the state i.e. toogle the state of passwordVisible variable
-                              setState(() {
-                                isPasswordHidden = !isPasswordHidden;
-                              });
-                            },
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+                  child: TextFormField(
+                    controller: password,
+                    obscureText: isPasswordHidden,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Pleas enter a password";
+                      }
+                      if (value.length <= 4) {
+                        return "password should be more than 4 char";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                        labelText: 'Password',
+                        hintText: 'Enter your password',
+                        fillColor: const Color(0xFFF7F8F8),
+                        filled: true,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 60),
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 20),
+                        prefixIconColor: Color.fromARGB(255, 0, 134, 172),
+                        prefixIcon: IconButton(
+                          icon: Icon(
+                            // Based on passwordVisible state choose the icon
+                            isPasswordHidden
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide:
-                                  const BorderSide(style: BorderStyle.none))),
-                    ),
+                          onPressed: () {
+                            // Update the state i.e. toogle the state of passwordVisible variable
+                            setState(() {
+                              isPasswordHidden = !isPasswordHidden;
+                            });
+                          },
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                                const BorderSide(style: BorderStyle.none))),
                   ),
+                ),
                   Container(
                     alignment: Alignment.topRight,
                     child: const Text(
@@ -179,20 +179,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                   .signInWithEmailAndPassword(
                                       email: email.text,
                                       password: password.text);
+                                      
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text(' >>>User is login successfully!'),
+                                backgroundColor: Colors.lightBlueAccent,
+                              ),
+                            );
                               Navigator.of(context)
                                   .pushReplacementNamed("home_screen");
                             } on FirebaseAuthException catch (e) {
-                              if (e.code == 'user-not-found') {
-                                if (kDebugMode) {
-                                  print('No user found for that email.');
-                                }
-                              } else if (e.code == 'wrong-password') {
-                                if (kDebugMode) {
-                                  print(
-                                      'Wrong password provided for that user.');
-                                }
-                              }
+                            // Handle FirebaseAuthException
+                            // Display SnackBar with error message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.message ?? 'An error occurred',
+                                ),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          } catch (e) {
+                            // Handle other exceptions
+                            if (kDebugMode) {
+                              print(e);
                             }
+                          }
                           }
                         },
                         child: const Padding(

@@ -1,5 +1,4 @@
-// ignore: file_names
-// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
+// ignore_for_file: use_build_context_synchronously, file_names
 
 import 'dart:io';
 
@@ -22,21 +21,21 @@ class _AddHouseState extends State<AddHouse> {
   List<File> _images = [];
   final picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
-  House house = House();
+  House house = House(ownerId: '');
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 100.0,
-        title:  Text('Add New House'),
-        titleTextStyle:  TextStyle(
+        title:  const Text('Add New House'),
+        titleTextStyle:  const TextStyle(
         fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         centerTitle: true,
-        backgroundColor:  Color.fromARGB(255, 0, 134, 172),
+        backgroundColor:  const Color.fromARGB(255, 0, 134, 172),
       ),
       body: Padding(
-        padding:  EdgeInsets.all(16.0),
+        padding:  const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -295,24 +294,32 @@ Future<void> _submitForm() async {
         final downloadUrl = await imageRef.getDownloadURL();
         house.images!.add(downloadUrl);
       }
-            // Convert name and address to lowercase
-      house.name = house.name!.toLowerCase();
-      house.address = house.address!.toLowerCase();
+
+      // // Convert name and address to lowercase
+      // house.name = house.name!.toLowerCase();
+      // house.address = house.address!.toLowerCase();
+
+      // Set ownerId to the UID of the current user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        house.ownerId = user.uid;
+      }
 
       // Save house data to Firestore
-      final houseDocRef = await db.collection('houses').add(house.toMap());
+        final houseDocRef = await db.collection('houses').add(house.toMap());
+        await db.collection('houses').doc(houseDocRef.id).update({
+          'houseId': houseDocRef.id,
+        });
 
-      // Get the ID of the created house
-      final houseUid = houseDocRef.id;
-
-
+        // Get the ID of the created house
+        final houseUid = houseDocRef.id;
 
       // Update addedHouse field in the user's document
-      final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await db.collection('users').doc(user.uid).update({
           'addedHouse': FieldValue.arrayUnion([houseUid]),
         });
+
       }
 
       // Clear form and show success message
@@ -343,4 +350,5 @@ Future<void> _submitForm() async {
     }
   }
 }
+
 }

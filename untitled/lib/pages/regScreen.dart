@@ -1,6 +1,5 @@
 // ignore_for_file: file_names, use_build_context_synchronously, prefer_const_constructors
 
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -151,7 +150,12 @@ class _RegScreenState extends State<RegScreen> {
                             enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
                                 borderSide: const BorderSide(
-                                    style: BorderStyle.none))))),
+                                    style: BorderStyle.none
+                                    )
+                                    )
+                                    )
+                                    )
+                                    ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
@@ -251,12 +255,12 @@ class _RegScreenState extends State<RegScreen> {
                               'username': userName.text,
                               'phoneNumber': phoneNumber.text,
                               'password': password.text,
-                              'image':"",
-                              'addedHouse':[],
+                              'addedHouse': [],
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text(' >>>User is signed in successfully!'),
+                                content:
+                                    Text(' >>>User is signed in successfully!'),
                                 backgroundColor: Colors.lightBlueAccent,
                               ),
                             );
