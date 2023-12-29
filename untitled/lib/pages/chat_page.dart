@@ -4,7 +4,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'package:untitled/pages/setting.dart';
 import 'package:untitled/pages/user_details_page.dart';
+
+class Chats extends StatelessWidget {
+  const Chats({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
+
+    );
+        }
+    
+  }
 
 class ChatPage extends StatefulWidget {
   final String userId;

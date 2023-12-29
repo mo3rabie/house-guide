@@ -15,6 +15,7 @@ import 'package:untitled/pages/home_screen.dart';
 import 'package:untitled/pages/loginScreen.dart';
 import 'package:untitled/pages/modules/user_profile_provider.dart';
 import 'package:untitled/pages/regScreen.dart';
+import 'package:untitled/pages/setting.dart';
 import 'package:untitled/pages/welcomeScreen.dart';
 void main() async {
 WidgetsFlutterBinding.ensureInitialized();
@@ -32,12 +33,22 @@ WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   
   runApp(
+    
     ChangeNotifierProvider(
       create: (context) => UserProfileProvider(),
       child: MyApp(),
     ),
+    
   ); 
-}
+runApp(
+    
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ],
+      child: MyApp(),
+    )
+  ); }
  
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -69,9 +80,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
 
         home: FirebaseAuth.instance.currentUser == null ?
          const WelcomeScreen() : const HomeScreen(),  

@@ -7,9 +7,11 @@ import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:firebase_auth/firebase_auth.dart';
+import "package:untitled/pages/HelpPage.dart";
 import 'package:untitled/pages/chats_list_page.dart';
 import "package:untitled/pages/housing_page.dart";
 import "package:untitled/pages/profile.dart";
+import "package:untitled/pages/setting.dart";
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -60,63 +62,70 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 0, 134, 172),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Profile Section
-              FutureBuilder<void>(
-                future: _fetchUserDataCompleter.future,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    // Show a loading indicator while waiting for user data
-                    return CircularProgressIndicator();
-                  } else {
-                    if (user != null) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ProfilePage()),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 50.0,
-                                backgroundImage: _image != null
-                                    ? FileImage(_image!)
-                                    : (userData != null && userData?['profilePicture'] != null)
-                                        ? NetworkImage(userData?['profilePicture'])
-                                        : const AssetImage('asset/images/person.jpg')
-                                            as ImageProvider<Object>?,
-                              ),
-                              const SizedBox(width: 10.0),
-                              Text(
-                                userData?['username'] ?? user!.displayName ?? 'Guest',
-                                style: TextStyle(fontSize: 15, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+        backgroundColor: Color.fromARGB(255, 0, 134, 172),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Profile Section
+                FutureBuilder<void>(
+                  future: _fetchUserDataCompleter.future,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // Show a loading indicator while waiting for user data
+                      return CircularProgressIndicator();
                     } else {
-                      // Handle the case where the user is null
-                      return Container(
-                        padding: EdgeInsets.all(10.0),
-                        child: Text(
-                          'You are not logged in.', // Customize this message
-                          style: TextStyle(color: Colors.white),
-          ),
-        );
-      }
-    }
-  },
-),
-
+                      if (user != null) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ProfilePage()),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 50.0,
+                                  backgroundImage: _image != null
+                                      ? FileImage(_image!)
+                                      : (userData != null &&
+                                              userData?['profilePicture'] !=
+                                                  null)
+                                          ? NetworkImage(
+                                              userData?['profilePicture'])
+                                          : const AssetImage(
+                                                  'asset/images/person.jpg')
+                                              as ImageProvider<Object>?,
+                                ),
+                                const SizedBox(width: 10.0),
+                                Text(
+                                  userData?['username'] ??
+                                      user!.displayName ??
+                                      'Guest',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      } else {
+                        // Handle the case where the user is null
+                        return Container(
+                          padding: EdgeInsets.all(10.0),
+                          child: Text(
+                            'You are not logged in.', // Customize this message
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
 
                 Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -173,9 +182,10 @@ class _MenuPageState extends State<MenuPage> {
                           icon: const Icon(Icons.bookmark_border),
                           onPressed: () {
                             Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>  ChatListPage()),
-                        );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChatListPage()),
+                            );
                           },
                         ),
                         const Text('Bookmark',
@@ -191,9 +201,10 @@ class _MenuPageState extends State<MenuPage> {
                           icon: const Icon(Icons.messenger_outline),
                           onPressed: () {
                             Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>  ChatListPage()),
-                        );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChatListPage()),
+                            );
                           },
                         ),
                         const Text('Message',
@@ -219,7 +230,11 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.settings_outlined),
                           onPressed: () {
-                            // Handle button press
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SettingsPage()),
+                            );
                           },
                         ),
                         const Text('Settings',
@@ -235,7 +250,11 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.help_outline),
                           onPressed: () {
-                            // Handle button press
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HelpPage()),
+                            );
                           },
                         ),
                         const Text('Help',
@@ -266,6 +285,4 @@ class _MenuPageState extends State<MenuPage> {
           ),
         ));
   }
-
 }
-

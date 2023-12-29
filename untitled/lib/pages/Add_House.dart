@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:provider/provider.dart';
 import 'package:untitled/pages/modules/house.dart';
+import 'package:untitled/pages/setting.dart';
 class AddHouse extends StatefulWidget {
   const AddHouse({super.key});
 
@@ -16,6 +18,18 @@ class AddHouse extends StatefulWidget {
   // ignore: library_private_types_in_public_api
   _AddHouseState createState() => _AddHouseState();
 }
+Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
+
+        
+    );
+  }
 
 class _AddHouseState extends State<AddHouse> {
   List<File> _images = [];

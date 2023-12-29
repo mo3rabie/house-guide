@@ -2,8 +2,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'package:untitled/pages/house_card.dart';
 import 'package:untitled/pages/modules/house.dart';
+import 'package:untitled/pages/setting.dart';
+
+class HousesPage extends StatelessWidget {
+  const HousesPage({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
+
+    );
+        }
+    
+  }
+  
 
 class AllHousesPage extends StatelessWidget {
   const AllHousesPage({super.key});
@@ -13,10 +35,10 @@ class AllHousesPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('All Houses'),
-        titleTextStyle:  TextStyle(
-        fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        titleTextStyle: TextStyle(
+            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         centerTitle: true,
-        backgroundColor:  Color.fromARGB(255, 0, 134, 172),
+        backgroundColor: Color.fromARGB(255, 0, 134, 172),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('houses').snapshots(),
@@ -41,11 +63,12 @@ class AllHousesPage extends StatelessWidget {
                   ),
                   // Assuming ItemCard takes a House model as a parameter
                   ItemCard(
-                    house: House.fromMap(houses[index].data() as Map<String, dynamic>),
+                    house: House.fromMap(
+                        houses[index].data() as Map<String, dynamic>),
                     onTap: () {},
                     key: null,
                   ),
-                   SizedBox(
+                  SizedBox(
                     height: 16.0,
                   ),
                 ],

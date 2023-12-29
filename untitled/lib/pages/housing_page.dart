@@ -3,13 +3,33 @@
 import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
+import "package:provider/provider.dart";
 import 'package:untitled/pages/Add_House.dart';
 import "package:untitled/pages/house_details_page.dart";
 import "package:untitled/pages/house_sugg_list.dart";
 import "package:untitled/pages/lowest_price_page.dart";
 import "package:untitled/pages/modules/house.dart";
+import "package:untitled/pages/setting.dart";
 //import "package:kf_drawer"
 
+class HousingMainPage extends StatelessWidget {
+  const HousingMainPage({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
+
+    );
+        }
+    
+  }
 class HousingPage extends StatefulWidget {
   const HousingPage({super.key});
 
@@ -26,10 +46,10 @@ class _HousingPageState extends State<HousingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.grey[300],
+        
         elevation: 0.0,
         toolbarHeight: 80.0,
         leading: const MenuDrawer(),

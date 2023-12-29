@@ -1,11 +1,12 @@
-// ignore_for_file: prefer_const_constructors
+
+// ignore_for_file: prefer_const_constructors, file_names
 
 import 'package:flutter/material.dart';
 import 'package:untitled/pages/loginScreen.dart';
 import 'package:untitled/pages/regScreen.dart';
  
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({Key? key}) : super(key: key);
+  const WelcomeScreen({super.key});
   
  
   @override

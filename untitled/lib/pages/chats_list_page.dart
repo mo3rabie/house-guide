@@ -3,8 +3,29 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:untitled/pages/chat_page.dart';
+import 'package:untitled/pages/setting.dart';
 
+
+class ChatsList extends StatelessWidget {
+  const ChatsList({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
+
+    );
+        }
+    
+  }
 class ChatListPage extends StatefulWidget {
   const ChatListPage({super.key});
 

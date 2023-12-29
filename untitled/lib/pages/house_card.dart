@@ -2,9 +2,27 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'package:untitled/pages/modules/house.dart';
 import 'package:untitled/pages/house_details_page.dart';
+import 'package:untitled/pages/setting.dart';
 
+class Cards extends StatelessWidget {
+  const Cards({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: context.watch<ThemeProvider>().isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
+         );
+        }
+      }
 class ItemCard extends StatefulWidget {
   const ItemCard({
     required super.key,
