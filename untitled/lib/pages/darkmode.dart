@@ -14,8 +14,8 @@ class ThemeProvider with ChangeNotifier {
   }
 }
 
-class DarkMode extends StatelessWidget {
-  const DarkMode({super.key});
+class Settings extends StatelessWidget {
+  const Settings({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +26,15 @@ class DarkMode extends StatelessWidget {
           ? ThemeMode.dark
           : ThemeMode.light,
       
-      home: const DarkModePage(),
+      home: const SettingsPage(),
     );
       
     
   }
 }
 
-class DarkModePage extends StatelessWidget {
-  const DarkModePage({super.key});
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

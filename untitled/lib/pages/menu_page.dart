@@ -7,6 +7,7 @@ import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import 'package:firebase_auth/firebase_auth.dart';
+import "package:provider/provider.dart";
 import "package:untitled/pages/HelpPage.dart";
 import 'package:untitled/pages/chats_list_page.dart';
 import "package:untitled/pages/housing_page.dart";
@@ -26,6 +27,10 @@ class _MenuPageState extends State<MenuPage> {
   File? _image;
   late Completer<void> _fetchUserDataCompleter;
   String hoveredOption = '';
+
+  get title => null;
+
+  get trailing => null;
   @override
   void initState() {
     super.initState();
@@ -228,17 +233,24 @@ class _MenuPageState extends State<MenuPage> {
                       children: [
                         IconButton(
                           color: Colors.white,
-                          icon: const Icon(Icons.settings_outlined),
+                          icon: const Icon(Icons.dark_mode),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SettingsPage()),
-                            );
+                            
                           },
                         ),
-                        const Text('Settings',
-                            style: TextStyle(color: Colors.white)),
+                        Text('Dark Mode',
+                        style: TextStyle(
+                             color: Colors.white,
+                             
+                             ),
+                            
+                        ),
+                        SizedBox(width: 25.5),
+                        Switch(
+                            value: context.watch<ThemeProvider>().isDarkMode,
+                            onChanged: (value) {
+                              context.read<ThemeProvider>().toggleTheme();
+                            })
                       ],
                     )),
                 ////  ////////////////////////////////////////////////////////////////////
