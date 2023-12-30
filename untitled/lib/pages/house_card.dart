@@ -2,27 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
-import 'package:untitled/pages/modules/house.dart';
+import 'package:untitled/pages/models/house.dart';
 import 'package:untitled/pages/house_details_page.dart';
-import 'package:untitled/pages/setting.dart';
 
-class Cards extends StatelessWidget {
-  const Cards({super.key});
-  
-  @override
-  Widget build(BuildContext context) {
-    
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: context.watch<ThemeProvider>().isDarkMode
-          ? ThemeMode.dark
-          : ThemeMode.light,
-         );
-        }
-      }
 class ItemCard extends StatefulWidget {
   const ItemCard({
     required super.key,
@@ -51,14 +33,20 @@ class _ItemCardState extends State<ItemCard> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        DocumentSnapshot<Map<String, dynamic>> userDoc =
-            await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore
+            .instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
         // Check if the 'bookmarks' field exists
-        if (userDoc.exists && userDoc.data() != null && userDoc.data()!['bookmarks'] != null) {
+        if (userDoc.exists &&
+            userDoc.data() != null &&
+            userDoc.data()!['bookmarks'] != null) {
           // Check if the house is in the 'bookmarks' array
           setState(() {
-            isBookmarked = userDoc.data()!['bookmarks'].contains(widget.house.houseId);
+            isBookmarked =
+                userDoc.data()!['bookmarks'].contains(widget.house.houseId);
           });
         }
       }
@@ -78,26 +66,32 @@ class _ItemCardState extends State<ItemCard> {
         DocumentReference<Map<String, dynamic>> userDocRef =
             FirebaseFirestore.instance.collection('users').doc(user.uid);
 
-        // Get user's current bookmarks
-        List<dynamic> bookmarks = [];
-
-        DocumentSnapshot<Map<String, dynamic>> userDoc = await userDocRef.get();
-
-        if (userDoc.exists && userDoc.data() != null && userDoc.data()!['bookmarks'] != null) {
-          bookmarks = List.from(userDoc.data()!['bookmarks']);
+        // Print before update
+        if (kDebugMode) {
+          print(
+              'Before Update - Bookmarks: ${isBookmarked ? 'Removing' : 'Adding'}');
         }
 
         // Update bookmarks based on user's action
-        if (isBookmarked) {
-          // Remove house UID from bookmarks
-          bookmarks.remove(widget.house.houseId);
-        } else {
-          // Add house UID to bookmarks
-          bookmarks.add(widget.house.houseId);
+        await userDocRef.update({
+          'bookmarks': isBookmarked
+              ? FieldValue.arrayRemove([widget.house.houseId])
+              : FieldValue.arrayUnion([widget.house.houseId]),
+        }).catchError((error) {
+          if (kDebugMode) {
+            print('Error updating bookmarks: $error');
+          }
+        });
+
+        if (kDebugMode) {
+          print('House ID: ${widget.house.houseId}');
         }
 
-        // Update 'bookmarks' field in the user's document
-        await userDocRef.update({'bookmarks': bookmarks});
+        // Print after update
+        if (kDebugMode) {
+          print(
+              'After Update - Bookmarks: ${isBookmarked ? 'Removed' : 'Added'}');
+        }
 
         // Update local state
         setState(() {
@@ -110,6 +104,7 @@ class _ItemCardState extends State<ItemCard> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -167,46 +162,50 @@ class _ItemCardState extends State<ItemCard> {
                 overflow: TextOverflow.ellipsis,
               ),
               Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Colors.blueGrey,
-                  ),
-                  Text(
-                    widget.house.address!,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 16.0,
-                        color: Colors.blueGrey),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "${widget.house.price} L.E/ Month",
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 22.0),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22.0,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  IconButton(
-            onPressed: () {
-              // Toggle bookmark state and perform the corresponding action
-              setState(() {
-                isBookmarked = !isBookmarked;
-                _handleBookmarkAction();
-              });
-            },
-            icon: Icon(
-              isBookmarked
-                  ? Icons.bookmark_added_outlined
-                  : Icons.bookmark_add_outlined,
-            ),
-          )
+                  StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        Map<String, dynamic>? userData = snapshot.data?.data();
+                        if (userData != null &&
+                            userData['bookmarks'] != null &&
+                            mounted) {
+                          isBookmarked = userData['bookmarks']
+                              .contains(widget.house.houseId);
+                        }
+                        return IconButton(
+                          onPressed: () {
+                            // Toggle bookmark state and perform the corresponding action
+                            _handleBookmarkAction();
+                          },
+                          icon: Icon(
+                            isBookmarked
+                                ? Icons.bookmark_added_outlined
+                                : Icons.bookmark_add_outlined,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ],
-              )
+              ),
             ],
           ),
         ),
