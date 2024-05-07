@@ -35,16 +35,22 @@ async function register (req, res) {
             email,
             password: hashedPassword,
             phoneNumber,
-            profilePicture: 'https://via.placeholder.com/150', // Default profile picture URL
+            profilePicture: null,
             addedHouses: [], // Initialize with an empty array
             bookMark: [], // Initialize with an empty array
         });
 
-        res.status(201).json({ message: 'User registered successfully' });
+        // Generate token
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+            expiresIn: '1h',
+        });
+
+        // Return token along with success message
+        res.status(201).json({ message: 'User registered successfully', token });
     } catch (error) {
         console.error(error); // Log the error message
         res.status(400).json({ error: 'Registration failed' });
-    }
+    } 
 }
 
 // Login

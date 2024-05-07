@@ -50,7 +50,30 @@ const userSchema = new mongoose.Schema({
     bookMark: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'house'
-    }] // Reference to House collection this Book Marked by user 
+    }], // Reference to House collection this Book Marked by user 
+    // Chat related fields
+    chats: [{
+        // Each chat entry will have two participants (users)
+        participants: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
+        // Array to store messages in the chat
+        messages: [{
+            // Each message will have a sender (user)
+            sender: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            },
+            // Message content
+            content: String,
+            // Timestamp of when the message was sent
+            timestamp: {
+                type: Date,
+                default: Date.now
+            }
+        }]
+    }]
 });
 
 // Function to get user by ID

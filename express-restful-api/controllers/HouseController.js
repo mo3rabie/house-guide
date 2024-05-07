@@ -2,9 +2,13 @@
 
 const House = require('../models/HouseModel');
 
+
+
 async function createHouse(req, res) {
+
   try {
-    const house = await House.create(req.body);
+    const { body, files } = req; // Get the uploaded files
+    const house = await House.create({...body,ownerId: req.userId, images: files.map(file => file.path) });
     res.status(201).json(house);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -47,7 +51,7 @@ async function deleteHouseById(req, res) {
 }
 
 async function getHouseByOwnerId(req, res) {
-  const { ownerId } = req.params;
+  const { ownerId } = req.userId;
   try {
     const house = await House.findOne({ ownerId });
     if (!house) {

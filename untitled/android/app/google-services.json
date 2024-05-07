@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "684628214910",
+    "project_id": "house-guide",
+    "storage_bucket": "house-guide.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684628214910:android:8b194fe7ea5afbb7ee842f",
+        "android_client_info": {
+          "package_name": "com.example.untitled"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzVlAScTIXuoS_LDxxUVgIXCSVEw1zX5I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
