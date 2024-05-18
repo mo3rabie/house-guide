@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:untitled/API/houseServices.dart';
+import 'package:untitled/API/userServices.dart';
 import 'package:untitled/pages/chat_page.dart';
 import 'package:untitled/pages/house_card.dart';
 import 'package:untitled/pages/modules/house.dart';
 
-class UserDetailsPage extends StatelessWidget {
+class UserDetailsPage extends StatefulWidget {
   final String userId;
+  final String token;
+  const UserDetailsPage({super.key, required this.userId, required this.token});
 
-  const UserDetailsPage({super.key, required this.userId});
+  @override
+  State<UserDetailsPage> createState() => _UserDetailsPageState();
+}
 
+class _UserDetailsPageState extends State<UserDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,45 +36,44 @@ class UserDetailsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Display user profile picture and name
-                FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+                FutureBuilder<Map<String, dynamic>>(
+                  future: UserService().getUserById(widget.userId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       // Loading indicator while fetching data
-                      return const CircularProgressIndicator();
-                    } else if (snapshot.hasError || snapshot.data == null) {
-                      // Handle error or null data
-                      return const Text('Error fetching user data.');
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      // Handle error
+                      return Text(
+                          'Error fetching user data: ${snapshot.error}');
+                    } else if (snapshot.data == null) {
+                      // Handle null data
+                      return const Text('No user data available.');
                     }
 
-                    final userData = snapshot.data!.data() as Map<String, dynamic>?;
+                    late Map<String, dynamic>? user = snapshot.data;
 
-                    if (userData != null) {
-                      final userPhoto = userData['profilePicture'] as String?;
-                      final userName = userData['username'] as String?;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: userPhoto != null ? NetworkImage(userPhoto) : null,
-                            radius: 80,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: user!['profilePicture'] != null
+                              ? NetworkImage(
+                                  'http://192.168.43.114:3000/${user['profilePicture']}')
+                              : null,
+                          radius: 80,
+                        ),
+                        const SizedBox(height: 10.0),
+                        Text(
+                          user['username'],
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 0, 134, 172),
                           ),
-                          const SizedBox(height: 10.0),
-                          Text(
-                            userName ?? 'Unknown User',
-                            style: const TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 0, 134, 172),
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      // Handle the case when userData is null
-                      return const Text('Invalid user data.');
-                    }
+                        ),
+                      ],
+                    );
                   },
                 ),
                 const SizedBox(height: 20.0),
@@ -79,7 +84,7 @@ class UserDetailsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChatPage(userId: userId),
+                        builder: (context) => ChatPage(userId: widget.userId, token: widget.token),
                       ),
                     );
                   },
@@ -100,8 +105,8 @@ class UserDetailsPage extends StatelessWidget {
                 const SizedBox(
                   height: 10.0,
                 ),
-                FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+                FutureBuilder<List<House>>(
+                  future: HouseService.getHousesByOwnerId(widget.userId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       // Loading indicator while fetching data
@@ -111,47 +116,20 @@ class UserDetailsPage extends StatelessWidget {
                       return const Text('Error fetching user data.');
                     }
 
-                    final userData = snapshot.data!.data() as Map<String, dynamic>?;
+                    final houses = snapshot.data!;
 
-                    if (userData != null) {
-                      final houses = userData['addedHouse'] as List<dynamic>?;
-
-                      if (houses != null && houses.isNotEmpty) {
-                        return Column(
-                          children: houses.map<Widget>((houseId) {
-                            return FutureBuilder<DocumentSnapshot>(
-                              future: FirebaseFirestore.instance.collection('houses').doc(houseId).get(),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  // Loading indicator while fetching data
-                                  return const CircularProgressIndicator();
-                                } else if (snapshot.hasError || snapshot.data == null) {
-                                  // Handle error or null data
-                                  return const Text('Error fetching house data.');
-                                }
-
-                                final houseData = snapshot.data!.data() as Map<String, dynamic>?;
-
-                                if (houseData != null) {
-                                  return ItemCard(
-                                    house: House.fromMap(houseData),
-                                    onTap: () {},
-                                    key: null,
-                                  );
-                                } else {
-                                  // Handle the case when houseData is null
-                                  return Container(); // Return an empty container
-                                }
-                              },
-                            );
-                          }).toList(),
-                        );
-                      } else {
-                        return const Text('No houses added by this user.');
-                      }
+                    if (houses.isNotEmpty) {
+                      return Column(
+                        children: houses.map<Widget>((house) {
+                          return HouseCard(
+                            house: house,
+                            onTap: () {},
+                            key: null, token: widget.token,
+                          );
+                        }).toList(),
+                      );
                     } else {
-                      // Handle the case when userData is null
-                      return const Text('Invalid user data.');
+                      return const Text('No houses added by this user.');
                     }
                   },
                 ),

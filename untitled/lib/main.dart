@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:untitled/API/chatService.dart';
+import 'package:untitled/API/userServices.dart';
 import 'package:untitled/pages/home_screen.dart';
 import 'package:untitled/pages/loginScreen.dart';
-import 'package:untitled/pages/modules/user_profile.dart';
 import 'package:untitled/pages/regScreen.dart';
 import 'package:untitled/pages/setting.dart';
 import 'package:untitled/pages/welcomeScreen.dart';
@@ -11,8 +12,9 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        ChangeNotifierProvider(create: (context) => UserProfileProvider()),
+        ChangeNotifierProvider<ThemeProvider>(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => ChatService()), // Provide ChatService
+        ChangeNotifierProvider(create: (_) => UserService()), // Provide UserService
       ],
       child: const MyApp(),
     ),

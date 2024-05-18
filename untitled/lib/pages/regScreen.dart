@@ -1,7 +1,7 @@
 // ignore_for_file: file_names, use_build_context_synchronously, prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:untitled/API/apiServices.dart';
+import 'package:untitled/API/userServices.dart';
 
 class RegScreen extends StatefulWidget {
   const RegScreen({super.key});
@@ -232,7 +232,7 @@ class _RegScreenState extends State<RegScreen> {
                       ),
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                         String? token = await UserService().createUserWithEmailAndPassword(email.text,password.text, userName.text, phoneNumber.text, context);
+                        await UserService().createUserWithEmailAndPassword(email.text,password.text, userName.text, phoneNumber.text, context);
                         }
                       },
                       child: Padding(

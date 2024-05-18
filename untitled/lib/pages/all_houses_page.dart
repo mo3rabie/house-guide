@@ -1,14 +1,19 @@
 // ignore_for_file: avoid_function_literals_in_foreach_calls, use_key_in_widget_constructors
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:untitled/API/houseServices.dart';
 import 'package:untitled/pages/house_card.dart';
 import 'package:untitled/pages/modules/house.dart';
 
-class AllHousesPage extends StatelessWidget {
-  const AllHousesPage({Key? key});
+class AllHousesPage extends StatefulWidget {
+  const AllHousesPage({Key? key, required this.token});
+  final String token;
 
+  @override
+  State<AllHousesPage> createState() => _AllHousesPageState();
+}
+
+class _AllHousesPageState extends State<AllHousesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,7 +25,7 @@ class AllHousesPage extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 0, 134, 172),
       ),
       body: FutureBuilder<List<House>>(
-        future: _fetchHouses(),
+        future: HouseService.getAllHouses(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -41,10 +46,10 @@ class AllHousesPage extends StatelessWidget {
                     height: 20,
                   ),
                   // Assuming ItemCard takes a House model as a parameter
-                  ItemCard(
+                  HouseCard(
                     house: houses[index],
                     onTap: () {},
-                    key: null,
+                    key: null, token: widget.token,
                   ),
                   const SizedBox(
                     height: 16.0,
@@ -56,23 +61,5 @@ class AllHousesPage extends StatelessWidget {
         },
       ),
     );
-  }
-
-  Future<List<House>> _fetchHouses() async {
-    try {
-      final response = await http.get(Uri.parse('http://192.168.43.114:3000/api/house/'));
-      if (response.statusCode == 200) {
-        final List<dynamic> responseData = json.decode(response.body);
-        List<House> houses = [];
-        responseData.forEach((houseData) {
-          houses.add(House.fromMap(houseData as Map<String, dynamic>));
-        });
-        return houses;
-      } else {
-        throw Exception('Failed to load houses');
-      }
-    } catch (error) {
-      throw Exception('Error fetching houses: $error');
-    }
   }
 }

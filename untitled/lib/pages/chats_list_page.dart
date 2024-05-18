@@ -1,9 +1,9 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously, avoid_function_literals_in_foreach_calls
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:untitled/API/chatService.dart';
+import 'package:untitled/API/userServices.dart';
 import 'package:untitled/pages/chat_page.dart';
 import 'package:untitled/pages/setting.dart';
 
@@ -27,21 +27,50 @@ class ChatsList extends StatelessWidget {
     
   }
 class ChatListPage extends StatefulWidget {
-  const ChatListPage({super.key});
+  const ChatListPage({super.key,required this.token});
+  final String token; 
 
   @override
   _ChatListPageState createState() => _ChatListPageState();
 }
 
 class _ChatListPageState extends State<ChatListPage> {
-  late User? currentUser;
- 
-  
+  late List<dynamic> chats = [];
+  late String currentUserId;
 
   @override
   void initState() {
     super.initState();
-    currentUser = FirebaseAuth.instance.currentUser;
+    // Fetch user data when the page initializes
+    fetchUserData();
+    // Fetch chat data
+    ChatService().getChat(widget.token).then((value) {
+      setState(() {
+        chats = value ?? [];
+      });
+    }).catchError((error) {
+      print('Error fetching chat data: $error');
+    });
+  }
+
+  // Function to fetch current user's data
+  Future<void> fetchUserData() async {
+    try {
+      final userData = await UserService().getUserDataByToken(widget.token);
+      if (userData is Map<String, dynamic>) {
+        setState(() {
+          currentUserId = userData['_id'];
+        });
+      } else {
+        throw Exception('Invalid user data format');
+      }
+    } catch (e) {
+      // Handle error
+      print('Failed to fetch user data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch user data: $e')),
+      );
+    }
   }
 
   @override
@@ -49,74 +78,68 @@ class _ChatListPageState extends State<ChatListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chats'),
-        titleTextStyle:  const TextStyle(
-        fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        titleTextStyle: const TextStyle(
+            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         centerTitle: true,
-        backgroundColor:  const Color.fromARGB(255, 0, 134, 172),
+        backgroundColor: const Color.fromARGB(255, 0, 134, 172),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('chats')
-            .where('participants', arrayContains: currentUser?.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+      body: _buildChatList(),
+    );
+  }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text('No chats yet.'),
-            );
-          }
+  Widget _buildChatList() {
+    // Set to store unique foreign user IDs
+    Set<String> uniqueForeignUserIds = <String>{};
 
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              DocumentSnapshot chat = snapshot.data!.docs[index];
-              List<dynamic> participants = chat['participants'];
-              
-              // Display the chat if the current user is a participant
-              if (participants.contains(currentUser?.uid)) {
-                return ChatListItem(
-                  userUid: chat['title'] ?? '',
-                  onTap: () {
-                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatPage(userId: chat['title'] ),
-                      ),
-                    );
-                  },
-                );
-              } else {
-                // Exclude chats where the current user is not a participant
-                return const SizedBox.shrink();
-              }
-            },
-          );
-        },
-      ),
+    // Iterate through chats to gather unique foreign user IDs
+    chats.forEach((chat) {
+      List<dynamic> participantsId = chat['participants'] ?? [];
+      participantsId.forEach((id) {
+        if (id != currentUserId) {
+          uniqueForeignUserIds.add(id);
+        }
+      });
+    });
+
+    // Build ChatListItems for each unique foreign user ID
+    return ListView(
+      children: uniqueForeignUserIds.map((foreignUserId) {
+        return ChatListItem(
+          userId: foreignUserId,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatPage(
+                  userId: foreignUserId,
+                  token: widget.token,
+                ),
+              ),
+            );
+          },
+        );
+      }).toList(),
     );
   }
 }
 
+
+
+
 class ChatListItem extends StatelessWidget {
-  final String userUid;
+  final String userId;
   final VoidCallback onTap;
 
   const ChatListItem({
-    super.key,
-    required this.userUid,
+    super.key, 
+    required this.userId,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('users').doc(userUid).get(),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: UserService().getUserById(userId),
       builder: (context, userSnapshot) {
         if (userSnapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox.shrink(); // Return an empty widget while data is loading
@@ -127,8 +150,9 @@ class ChatListItem extends StatelessWidget {
         }
 
         // Get user data
-        String profilePicture = userSnapshot.data!['profilePicture'] ?? ''; // Replace 'profilePicture' with the actual field name
-        String username = userSnapshot.data!['username'] ?? ''; // Replace 'username' with the actual field name
+        Map<String, dynamic> userData = userSnapshot.data!;
+        String profilePicture = userData['profilePicture'] ?? '';
+        String username = userData['username'] ?? '';
 
         // Return the ChatListItem with user data
         return ListTile(
@@ -138,12 +162,12 @@ class ChatListItem extends StatelessWidget {
               CircleAvatar(
                 radius: 40,
                 backgroundImage: profilePicture.isNotEmpty
-                    ? NetworkImage(profilePicture)
+                    ? NetworkImage('http://192.168.43.114:3000/$profilePicture')
                     : const AssetImage('asset/images/person.jpg') as ImageProvider<Object>,
               ),
               const SizedBox(width: 8),
               // Display the username of the other user
-               Text(
+              Text(
                 username,
                 style: const TextStyle(
                   fontSize: 20, // Adjust the font size as needed
@@ -158,3 +182,4 @@ class ChatListItem extends StatelessWidget {
     );
   }
 }
+

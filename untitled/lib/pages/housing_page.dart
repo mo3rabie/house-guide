@@ -1,23 +1,21 @@
 // ignore_for_file: prefer_const_constructors
 
-import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
 import "package:provider/provider.dart";
+import "package:untitled/API/houseServices.dart";
 import 'package:untitled/pages/Add_House.dart';
 import "package:untitled/pages/house_details_page.dart";
 import "package:untitled/pages/house_sugg_list.dart";
 import "package:untitled/pages/lowest_price_page.dart";
 import "package:untitled/pages/modules/house.dart";
 import "package:untitled/pages/setting.dart";
-//import "package:kf_drawer"
 
 class HousingMainPage extends StatelessWidget {
   const HousingMainPage({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(),
@@ -25,13 +23,14 @@ class HousingMainPage extends StatelessWidget {
       themeMode: context.watch<ThemeProvider>().isDarkMode
           ? ThemeMode.dark
           : ThemeMode.light,
-
     );
-        }
-    
   }
+}
+
 class HousingPage extends StatefulWidget {
-  const HousingPage({super.key});
+  final String token; // User token parameter
+
+  const HousingPage({super.key, required this.token});
 
   @override
   State<HousingPage> createState() => _HousingPageState();
@@ -46,13 +45,20 @@ class _HousingPageState extends State<HousingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        
         elevation: 0.0,
         toolbarHeight: 80.0,
-        leading: const MenuDrawer(),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.menu,
+            size: 32,
+            color: Color.fromARGB(255, 0, 134, 172),
+          ),
+          onPressed: () {
+            ZoomDrawer.of(context)!.toggle();
+          },
+        ),
         actions: [
           SizedBox(
             width: MediaQuery.of(context).size.width * .97,
@@ -90,11 +96,11 @@ class _HousingPageState extends State<HousingPage> {
               const SizedBox(
                 height: 10,
               ),
-              SearchHousingeWidget(context),
+              SearchHousingeWidget(context, token: widget.token),
               const SizedBox(
                 height: 10,
               ),
-              HouseSuggList("Recommendation for you"),
+              HouseSuggList("Recommendation for you", token: widget.token),
               const SizedBox(
                 height: 10,
               ),
@@ -107,7 +113,7 @@ class _HousingPageState extends State<HousingPage> {
   }
 
   // ignore: non_constant_identifier_names
-  Widget SearchHousingeWidget(BuildContext context) {
+  Widget SearchHousingeWidget(BuildContext context, {required String token}) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Container(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
@@ -118,7 +124,7 @@ class _HousingPageState extends State<HousingPage> {
         child: SingleChildScrollView(
           child: TextField(
             onTap: () {
-              showSearch(context: context, delegate: CustomSearch());
+              showSearch(context: context, delegate: CustomSearch(token));
             },
             decoration: InputDecoration(
                 border: InputBorder.none,
@@ -139,7 +145,7 @@ class _HousingPageState extends State<HousingPage> {
             color: Colors.white, borderRadius: BorderRadius.circular(18)),
         child: InkWell(
           onTap: () {
-            _showFilterDialog(context); // Show the filter dialog
+            _showFilterDialog(context, widget.token); // Show the filter dialog
           },
           child: const Icon(Icons.tune, color: Colors.grey),
         ),
@@ -158,8 +164,10 @@ class _HousingPageState extends State<HousingPage> {
           shadowColor: MaterialStateProperty.all(Colors.blue),
         ),
         onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const AddHouse()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => AddHouse(token: widget.token)));
         },
         child: const Text(
           "Add House",
@@ -170,7 +178,7 @@ class _HousingPageState extends State<HousingPage> {
   }
 }
 
-Future<void> _showFilterDialog(BuildContext context) async {
+Future<void> _showFilterDialog(BuildContext context, String token) async {
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -189,12 +197,11 @@ Future<void> _showFilterDialog(BuildContext context) async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => LowestPricedHousesPage(),
+                    builder: (context) => LowestPricedHousesPage(token: token),
                   ),
                 );
               },
             ),
-            // Add more filter options as needed
           ],
         ),
       );
@@ -219,29 +226,12 @@ Widget _buildFilterOption(
   );
 }
 
-class MenuDrawer extends StatelessWidget {
-  const MenuDrawer({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        ZoomDrawer.of(context)!.toggle();
-      },
-      //
-
-      icon: const Icon(
-        Icons.menu,
-        size: 40,
-        color: Color.fromARGB(255, 0, 134, 172),
-      ),
-    );
-  }
-}
 
 class CustomSearch extends SearchDelegate {
-  final CollectionReference housesRef =
-      FirebaseFirestore.instance.collection('houses');
+  final String token;
+
+  CustomSearch(this.token);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -267,84 +257,61 @@ class CustomSearch extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    return FutureBuilder<QuerySnapshot>(
-      future: housesRef
-          .where('address', isGreaterThanOrEqualTo: query)
-          .where('address', isLessThan: '${query}z')
-          .get(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        var houses = snapshot.data?.docs ?? [];
-
-        return ListView.builder(
-          itemCount: houses.length,
-          itemBuilder: (context, index) {
-            var house =
-                House.fromMap(houses[index].data() as Map<String, dynamic>);
-            return InkWell(
-              onTap: () {
-                // Navigate to the details page or perform any action
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HouseDetailsPage(item: house),
-                  ),
-                );
-              },
-              child: Card(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Text(
-                    house.name!,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
+    return _buildSearchResults(context, token);
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return FutureBuilder<QuerySnapshot>(
-      future: housesRef
-          .where('address', isGreaterThanOrEqualTo: query)
-          .where('address', isLessThan: '${query}z')
-          .get(),
+    return _buildSearchResults(context, token);
+  }
+
+  Widget _buildSearchResults(BuildContext context, String token) {
+    return FutureBuilder<List<House>>(
+      future: HouseService.searchHousesByAddress(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
         }
 
         if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          // Check if the error is a NetworkException
+          if (snapshot.error is NetworkException) {
+            // Handle the NetworkException
+            return Center(
+              child: Text(
+                'No matching addresses found.',
+                style: TextStyle(fontSize: 16),
+              ),
+            );
+          } else {
+            return Text('Error: ${snapshot.error}');
+          }
         }
 
-        var houses = snapshot.data?.docs ?? [];
+        var houses = snapshot.data ?? [];
+
+        if (houses.isEmpty) {
+          // No matching addresses found
+          return Center(
+            child: Text(
+              'No matching addresses found',
+              style: TextStyle(fontSize: 16),
+            ),
+          );
+        }
 
         return ListView.builder(
           itemCount: houses.length,
           itemBuilder: (context, index) {
-            var house =
-                House.fromMap(houses[index].data() as Map<String, dynamic>);
+            var house = houses[index];
             return InkWell(
               onTap: () {
                 // Navigate to the details page or perform any action
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => HouseDetailsPage(item: house),
+                    builder: (context) =>
+                        HouseDetailsPage(item: house, token: token),
                   ),
                 );
               },

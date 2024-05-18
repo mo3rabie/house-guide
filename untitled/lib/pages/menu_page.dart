@@ -1,63 +1,49 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, unnecessary_null_comparison
 
 import "dart:async";
-import "dart:io";
-
-import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
-import "package:flutter_zoom_drawer/flutter_zoom_drawer.dart";
-import 'package:firebase_auth/firebase_auth.dart';
 import "package:provider/provider.dart";
+import "package:untitled/API/userServices.dart";
 import "package:untitled/pages/HelpPage.dart";
 import "package:untitled/pages/book_marks_page.dart";
 import 'package:untitled/pages/chats_list_page.dart';
-import "package:untitled/pages/housing_page.dart";
 import "package:untitled/pages/profile.dart";
 import "package:untitled/pages/setting.dart";
 
 class MenuPage extends StatefulWidget {
-  const MenuPage({super.key});
+  final String token; // User token parameter
+
+  const MenuPage({super.key, required this.token});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
 }
 
 class _MenuPageState extends State<MenuPage> {
-  late User? user; // Make the user nullable
-  Map<String, dynamic>? userData;
-  File? _image;
+  late Map<String, dynamic>? _userData;
   late Completer<void> _fetchUserDataCompleter;
   String hoveredOption = '';
-
-  get title => null;
-
-  get trailing => null;
   @override
   void initState() {
     super.initState();
     _fetchUserDataCompleter = Completer<void>();
-    getUser();
-  }
-
-  Future<void> getUser() async {
-    user = FirebaseAuth.instance.currentUser;
-    await fetchUserData(); // Call fetchUserData after retrieving the user
-    _fetchUserDataCompleter.complete(); // Complete the future
+    _userData = {};
+    fetchUserData();
   }
 
   Future<void> fetchUserData() async {
     try {
-      final DocumentSnapshot<Map<String, dynamic>> userDoc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user!.uid)
-              .get();
-
-      setState(() {
-        userData = userDoc.data();
-        userData?['username'] ?? '';
-        userData?['profilePicture'] ?? '';
-      });
+      final userService = UserService();
+      final responseBody = await userService.getUserDataByToken(widget.token);
+      if (responseBody != null) {
+        setState(() {
+          _userData = responseBody;
+        });
+      } else {
+        setState(() {
+          _userData = {}; // Reset user data
+        });
+      }
     } finally {
       if (!_fetchUserDataCompleter.isCompleted) {
         _fetchUserDataCompleter.complete();
@@ -78,62 +64,64 @@ class _MenuPageState extends State<MenuPage> {
                   future: _fetchUserDataCompleter.future,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      // Show a loading indicator while waiting for user data
                       return CircularProgressIndicator();
                     } else {
-                      if (user != null) {
-                        return GestureDetector(
+                      if (_userData != null) {
+                        // Check if _userData is not null
+                        String? profilePictureUrl =
+                            _userData!['profilePicture'];
+                        return InkWell(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ProfilePage()),
+                                builder: (context) =>
+                                    ProfilePage(token: widget.token),
+                              ),
                             );
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(5.0),
                             child: Row(
                               children: [
                                 CircleAvatar(
                                   radius: 50.0,
-                                  backgroundImage: _image != null
-                                      ? FileImage(_image!)
-                                      : (userData != null &&
-                                              userData?['profilePicture'] !=
-                                                  null)
-                                          ? NetworkImage(
-                                              userData?['profilePicture'])
-                                          : const AssetImage(
-                                                  'asset/images/person.jpg')
-                                              as ImageProvider<Object>?,
+                                  backgroundImage: profilePictureUrl != null
+                                      ? NetworkImage(
+                                          'http://192.168.43.114:3000/$profilePictureUrl')
+                                      : AssetImage('asset/images/person.jpg')
+                                          as ImageProvider,
                                 ),
-                                const SizedBox(width: 10.0),
+                                const SizedBox(width: 2.0),
                                 Text(
-                                  userData?['username'] ??
-                                      user!.displayName ??
-                                      'Guest',
+                                  _userData!['username'] ?? 'Guest',
                                   style: TextStyle(
-                                      fontSize: 15, color: Colors.white),
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         );
                       } else {
-                        // Handle the case where the user is null
-                        return Container(
-                          padding: EdgeInsets.all(10.0),
-                          child: Text(
-                            'You are not logged in.', // Customize this message
-                            style: TextStyle(color: Colors.white),
-                          ),
+                        // Handle the case where _userData is null
+                        return Text(
+                          'User data not available',
+                          style: TextStyle(color: Colors.white),
                         );
                       }
                     }
                   },
                 ),
-
-                Padding(
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushReplacementNamed(
+                      "home_screen",
+                      arguments: {'token': widget.token},
+                    );
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -141,18 +129,28 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.home_outlined),
                           onPressed: () {
-                            ZoomDrawer.of(context)!.toggle();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HousingPage()));
+                            Navigator.of(context).pushReplacementNamed(
+                              "home_screen",
+                              arguments: {'token': widget.token},
+                            );
                           },
                         ),
                         const Text('Home',
                             style: TextStyle(color: Colors.white)),
                       ],
-                    )),
-                Padding(
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfilePage(token: widget.token),
+                      ),
+                    );
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -161,15 +159,20 @@ class _MenuPageState extends State<MenuPage> {
                           icon: const Icon(Icons.person_2_outlined),
                           onPressed: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => ProfilePage()));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ProfilePage(token: widget.token),
+                              ),
+                            );
                           },
                         ),
                         const Text('Profile',
                             style: TextStyle(color: Colors.white)),
                       ],
-                    )),
+                    ),
+                  ),
+                ),
 
                 SizedBox(
                   height: 1, // Adjust the height of the line
@@ -179,7 +182,17 @@ class _MenuPageState extends State<MenuPage> {
                     color: Colors.grey[200], // Set the color of the line
                   ),
                 ),
-                Padding(
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            BookmarksPage(token: widget.token),
+                      ),
+                    );
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -190,15 +203,28 @@ class _MenuPageState extends State<MenuPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => BookmarksPage()),
+                                builder: (context) =>
+                                    BookmarksPage(token: widget.token),
+                              ),
                             );
                           },
                         ),
                         const Text('Bookmark',
                             style: TextStyle(color: Colors.white)),
                       ],
-                    )),
-                Padding(
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatListPage(token: widget.token),
+                      ),
+                    );
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -209,14 +235,18 @@ class _MenuPageState extends State<MenuPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ChatListPage()),
+                                builder: (context) =>
+                                    ChatListPage(token: widget.token),
+                              ),
                             );
                           },
                         ),
                         const Text('Message',
                             style: TextStyle(color: Colors.white)),
                       ],
-                    )),
+                    ),
+                  ),
+                ),
                 ////////////////////////////////////////////////////////////////
                 SizedBox(
                   height: 1, // Adjust the height of the line
@@ -228,34 +258,46 @@ class _MenuPageState extends State<MenuPage> {
                 ),
 
                 //////////////////////////////////////////////////
-                Padding(
+// Dark Mode
+                InkWell(
+                  onTap: () {},
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
                         IconButton(
                           color: Colors.white,
                           icon: const Icon(Icons.dark_mode),
-                          onPressed: () {
-                            
-                          },
+                          onPressed: () {},
                         ),
-                        Text('Dark Mode',
-                        style: TextStyle(
-                             color: Colors.white,
-                             
-                             ),
-                            
+                        Text(
+                          'Dark Mode',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
                         ),
-                        SizedBox(width: 25.5),
+                        SizedBox(width: 20),
                         Switch(
-                            value: context.watch<ThemeProvider>().isDarkMode,
-                            onChanged: (value) {
-                              context.read<ThemeProvider>().toggleTheme();
-                            })
+                          value: context.watch<ThemeProvider>().isDarkMode,
+                          onChanged: (value) {
+                            context.read<ThemeProvider>().toggleTheme();
+                          },
+                        )
                       ],
-                    )),
-                ////  ////////////////////////////////////////////////////////////////////
-                Padding(
+                    ),
+                  ),
+                ),
+// Help
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HelpPage(),
+                      ),
+                    );
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -266,16 +308,24 @@ class _MenuPageState extends State<MenuPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => HelpPage()),
+                                builder: (context) => HelpPage(),
+                              ),
                             );
                           },
                         ),
                         const Text('Help',
                             style: TextStyle(color: Colors.white)),
                       ],
-                    )),
-                ///////////////////////////////////////////////////////////////////////
-                Padding(
+                    ),
+                  ),
+                ),
+// Logout
+                InkWell(
+                  onTap: () async {
+                    // Call the logout method from the UserService class
+                    await UserService().logout(context, token: widget.token);
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
                       children: [
@@ -283,16 +333,17 @@ class _MenuPageState extends State<MenuPage> {
                           color: Colors.white,
                           icon: const Icon(Icons.power_settings_new_outlined),
                           onPressed: () async {
-                            await FirebaseAuth.instance.signOut();
-                            // ignore: use_build_context_synchronously
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                                "welcomeScreen", (route) => false);
+                            // Call the logout method from the UserService class
+                            await UserService()
+                                .logout(context, token: widget.token);
                           },
                         ),
                         const Text('Logout',
                             style: TextStyle(color: Colors.white)),
                       ],
-                    )),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

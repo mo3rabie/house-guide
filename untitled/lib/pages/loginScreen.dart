@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, file_names, unused_local_variable, prefer_const_constructors
 import 'package:flutter/material.dart';
-import 'package:untitled/API/apiServices.dart';
+import 'package:untitled/API/userServices.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isPasswordHidden = true;
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,31 +52,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: email,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Pleas enter email";
+                          return "Please enter email";
                         }
                         if (!RegExp(
                                 r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                             .hasMatch(value)) {
-                          return "Pleas enter a valid email address";
+                          return "Please enter a valid email address";
                         }
                         return null;
                       },
                       decoration: InputDecoration(
-                          labelText: "Email",
-                          hintText: "Enter your Email",
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 60),
-                          fillColor: const Color(0xFFF7F8F8),
-                          filled: true,
-                          isDense: true,
-                          prefixIcon: Icon(Icons.email_outlined),
-                          prefixIconColor: Color.fromARGB(255, 0, 134, 172),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide:
-                                  const BorderSide(style: BorderStyle.none))),
+                        labelText: "Email",
+                        hintText: "Enter your Email",
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 60),
+                        fillColor: const Color(0xFFF7F8F8),
+                        filled: true,
+                        isDense: true,
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        prefixIconColor: Color.fromARGB(255, 0, 134, 172),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: const BorderSide(
+                            style: BorderStyle.none,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   Padding(
@@ -86,44 +91,48 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: isPasswordHidden,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Pleas enter a password";
+                          return "Please enter a password";
                         }
                         if (value.length <= 4) {
-                          return "password should be more than 4 char";
+                          return "Password should be more than 4 characters";
                         }
                         return null;
                       },
                       decoration: InputDecoration(
-                          labelText: 'Password',
-                          hintText: 'Enter your password',
-                          fillColor: const Color(0xFFF7F8F8),
-                          filled: true,
-                          isDense: true,
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 60),
-                          prefixIconConstraints:
-                              const BoxConstraints(minWidth: 20),
-                          prefixIconColor: Color.fromARGB(255, 0, 134, 172),
-                          prefixIcon: IconButton(
-                            icon: Icon(
-                              // Based on passwordVisible state choose the icon
-                              isPasswordHidden
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              // Update the state i.e. toogle the state of passwordVisible variable
-                              setState(() {
-                                isPasswordHidden = !isPasswordHidden;
-                              });
-                            },
+                        labelText: 'Password',
+                        hintText: 'Enter your password',
+                        fillColor: const Color(0xFFF7F8F8),
+                        filled: true,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 60),
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 20),
+                        prefixIconColor: Color.fromARGB(255, 0, 134, 172),
+                        prefixIcon: IconButton(
+                          icon: Icon(
+                            // Based on passwordVisible state choose the icon
+                            isPasswordHidden
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide:
-                                  const BorderSide(style: BorderStyle.none))),
+                          onPressed: () {
+                            // Update the state i.e. toggle the state of passwordVisible variable
+                            setState(() {
+                              isPasswordHidden = !isPasswordHidden;
+                            });
+                          },
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: const BorderSide(
+                            style: BorderStyle.none,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   Container(
@@ -140,9 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         boxShadow: const [
                           BoxShadow(
-                              color: Colors.black26,
-                              offset: Offset(0, 4),
-                              blurRadius: 5.0)
+                            color: Colors.black26,
+                            offset: Offset(0, 4),
+                            blurRadius: 5.0,
+                          )
                         ],
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
@@ -173,7 +183,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            var token = UserService.signInWithEmailAndPassword(email.text, password.text,context);
+                            
+                                await UserService().signInWithEmailAndPassword(
+                              email.text,
+                              password.text,
+                              context,
+                            );
+
                           }
                         },
                         child: const Padding(
@@ -192,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  InkWell(
+                  GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushReplacementNamed("regScreen");
                     },
@@ -202,11 +218,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             TextSpan(text: "Don't have an Account ?"),
                             TextSpan(
-                                text: ' Sing up',
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 0, 134, 172),
-                                  fontWeight: FontWeight.bold,
-                                ))
+                              text: ' Sign up',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 0, 134, 172),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),

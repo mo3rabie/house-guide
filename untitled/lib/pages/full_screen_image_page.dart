@@ -6,10 +6,9 @@ import 'package:untitled/pages/setting.dart';
 
 class FullScreenImages extends StatelessWidget {
   const FullScreenImages({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(),
@@ -17,15 +16,15 @@ class FullScreenImages extends StatelessWidget {
       themeMode: context.watch<ThemeProvider>().isDarkMode
           ? ThemeMode.dark
           : ThemeMode.light,
-
     );
-        }
-    
   }
+}
+
 class FullScreenImagePage extends StatelessWidget {
   final String imageUrl;
 
-  const FullScreenImagePage({Key? key, required this.imageUrl}) : super(key: key);
+  const FullScreenImagePage({Key? key, required this.imageUrl})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +38,7 @@ class FullScreenImagePage extends StatelessWidget {
           child: Hero(
             tag: 'fullscreenImage', // Use a unique tag
             child: Image.network(
-              imageUrl,
+              'http://192.168.43.114:3000/$imageUrl', // Update the URL here
               fit: BoxFit.cover,
             ),
           ),

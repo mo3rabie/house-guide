@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class House {
   String? name;
   String? phone;
@@ -5,7 +7,7 @@ class House {
   String? price;
   String? description;
   List<String>? images;
-  String ownerId; // New field for storing the UID of the user who added the house
+  String? ownerId; // New field for storing the UID of the user who added the house
   String? houseId;
 
   House({
@@ -15,7 +17,7 @@ class House {
     this.price,
     this.description,
     this.images,
-    required this.ownerId,
+    this.ownerId,
     this.houseId
   });
 
@@ -28,7 +30,6 @@ class House {
       'price': price,
       'description': description,
       'images': images,
-      'ownerId': ownerId, // Add ownerId to the map
     };
   }
 
@@ -42,12 +43,18 @@ class House {
       description: map['description'],
       images: List<String>.from(map['images'] ?? []),
       ownerId: map['ownerId'], // Retrieve ownerId from the map
-      houseId: map['houseId'],
+      houseId: map['_id'],
     );
   }
 
-  
-  Map<String, dynamic> toJson() => toMap();
+  // Convert House object to a JSON string
+  String toJson() {
+    return json.encode(toMap());
+  }
 
-  factory House.fromJson(Map<String, dynamic> json) => fromMap(json);
+  // Create a House object from a JSON string
+  static House fromJson(String jsonString) {
+    final Map<String, dynamic> map = json.decode(jsonString);
+    return fromMap(map);
+  }
 }

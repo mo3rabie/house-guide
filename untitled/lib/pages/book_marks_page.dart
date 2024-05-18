@@ -1,40 +1,46 @@
-// bookmarks_page.dart
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:untitled/API/houseServices.dart';
+import 'package:untitled/API/userServices.dart';
 import 'package:untitled/pages/modules/house.dart';
 import 'package:untitled/pages/house_card.dart'; // Import your HouseCard widget
 
 class BookmarksPage extends StatefulWidget {
-  const BookmarksPage({super.key});
+  const BookmarksPage({super.key,  required this.token});
+
+  final String token;
 
   @override
   _BookmarksPageState createState() => _BookmarksPageState();
 }
 
 class _BookmarksPageState extends State<BookmarksPage> {
+  late Future<Map<String, dynamic>?> _userDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userDataFuture = UserService().getUserDataByToken(widget.token);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bookmarks'),
-        titleTextStyle:  const TextStyle(
-        fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        titleTextStyle: const TextStyle(
+            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         centerTitle: true,
-        backgroundColor:  const Color.fromARGB(255, 0, 134, 172),
+        backgroundColor: const Color.fromARGB(255, 0, 134, 172),
       ),
       body: _buildBookmarksList(),
     );
   }
 
   Widget _buildBookmarksList() {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .snapshots(),
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: _userDataFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -45,9 +51,10 @@ class _BookmarksPageState extends State<BookmarksPage> {
             child: Text('Error: ${snapshot.error}'),
           );
         } else {
-          Map<String, dynamic>? userData = snapshot.data?.data();
-          if (userData != null && userData['bookmarks'] != null) {
-            List<String> bookmarkedHouseIds = List<String>.from(userData['bookmarks']);
+          Map<String, dynamic>? userData = snapshot.data;
+          if (userData != null && userData['bookMark'] != null) { // Change here
+            List<String> bookmarkedHouseIds =
+                List<String>.from(userData['bookMark']); // Change here
 
             if (bookmarkedHouseIds.isEmpty) {
               return const Center(
@@ -58,21 +65,31 @@ class _BookmarksPageState extends State<BookmarksPage> {
             return ListView.builder(
               itemCount: bookmarkedHouseIds.length,
               itemBuilder: (context, index) {
-                return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                  future: FirebaseFirestore.instance
-                      .collection('houses')
-                      .doc(bookmarkedHouseIds[index])
-                      .get(),
+                return FutureBuilder<House>(
+                  future: HouseService.getHouseById(bookmarkedHouseIds[index]),
                   builder: (context, houseSnapshot) {
                     if (houseSnapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
                     } else if (houseSnapshot.hasError) {
                       return Text('Error: ${houseSnapshot.error}');
                     } else {
-                      House house = House.fromMap(houseSnapshot.data!.data()!);
-                      return ItemCard(house: house, onTap: () {
-                        // Handle house card tap if needed
-                      }, key: null,);
+                      House house = houseSnapshot.data!;
+              return Column(
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  // Assuming ItemCard takes a House model as a parameter
+                  HouseCard(
+                    house: house,
+                    onTap: () {},
+                    key: null, token: widget.token,
+                  ),
+                  const SizedBox(
+                    height: 16.0,
+                  ),
+                ],
+              );
                     }
                   },
                 );
