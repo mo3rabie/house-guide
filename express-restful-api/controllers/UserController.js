@@ -1,7 +1,6 @@
 // controllers/UserController.js
 
 const UserModel = require('../models/UserModel');
-const { CastError } = require('mongoose'); // Import CastError from Mongoose
 
 async function getUserDataById(req, res) {
 
@@ -14,18 +13,18 @@ async function getUserDataById(req, res) {
     }
 }
 
-// async function updateUserDataById(req, res) {
-//     const userId = req.params.userId;
-//     const newData = req.body;
+async function updateUserDataById(req, res) {
+    const userId = req.params.userId;
+    const newData = req.body;
 
-//     try {
-//         const updatedUserData = await UserModel.updateUserDataById(userId, newData);
-//         res.status(200).json(updatedUserData);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// }
+    try {
+        const updatedUserData = await UserModel.updateUserDataById(userId, newData);
+        res.status(200).json(updatedUserData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 async function getUserData(req, res) {
     try {
@@ -53,51 +52,6 @@ async function updateUserData(req, res) {
     }
 }
 
-// Create a new chat
-async function createChat(req, res) {
-    try {
-        const { participants } = req.body;
-        const chat = await UserModel.findByIdAndUpdate(req.userId, {
-            $push: {
-                chats: {
-                    participants
-                }
-            }
-        }, { new: true });
-        res.status(201).json(chat);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Could not create chat' });
-    }
-}
-
-// Send a message in a chat
-async function sendMessage(req, res) {
-    try {
-        const { chatId } = req.params;
-        const { sender, content } = req.body;
-
-        const userId = req.userId;
-        const user = await UserModel.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const chat = user.chats.find(chat => chat._id.toString() === chatId);
-        if (!chat) {
-            return res.status(404).json({ error: 'Chat not found' });
-        }
-
-        chat.messages.push({ sender, content });
-        await user.save();
-
-        res.json(chat);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Could not send message' });
-    }
-}
 
 // Function to upload profile picture
 async function uploadProfilePicture(req, res) {
@@ -124,4 +78,45 @@ async function uploadProfilePicture(req, res) {
     }
 }
 
-module.exports = { getUserDataById, updateUserData, getUserData, createChat, sendMessage, uploadProfilePicture}; 
+async function bookMark(req, res) {
+    try {
+        const houseId = req.params.houseId; // Extract houseId from params
+        const userId = req.userId; // Get the user ID from the token
+    
+        // Retrieve the user document from the database
+        const user = await UserModel.getUserById(userId); 
+    
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+    
+        // Toggle the bookmark state
+        const index = user.bookMark.indexOf(houseId);
+        if (index === -1) {
+            // Add the houseId to bookmarks
+            user.bookMark.push(houseId);
+
+        // Save the updated user document
+        await user.save();
+        res.status(200).json({ message: ' Bookmark is successfully' });
+        } else {
+            // Remove the houseId from bookmarks
+            user.bookMark.splice(index, 1);
+                
+        // Save the updated user document
+        await user.save();
+        res.status(200).json({ message: ' Bookmark cancelled !' });
+        }
+
+    } catch (error) {
+        if (error.name === 'CastError') {
+            // Handle CastError (e.g., invalid ObjectId)
+            return res.status(400).json({ message: 'Invalid user ID' });
+        }
+        console.error('Error handling bookmark action:', error);
+        res.status(500).json({ message: 'Internal server error' });
+       }     
+    }
+
+
+module.exports = { getUserDataById, updateUserDataById, updateUserData, getUserData, uploadProfilePicture, bookMark}; 

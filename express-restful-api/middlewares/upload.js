@@ -1,40 +1,27 @@
+//middlewares/uploads.js
 
-const multer = require('multer'); // Add multer for file uploads
+const multer = require('multer');
 
+// Define storage for the uploaded files
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, 'uploads');
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
+
+
+// Initialize multer with the storage options and file filter
 const upload = multer({
   storage: storage,
-  limits: {
-    fileSize: 10000000 // Limit file size to 10MB
-  },
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
+  limits: { fileSize: 10000000 }, // Limit file size to 10MB
+  onError: function (err, next) {
+    console.error('Multer error:', err);
+    next(err);
   }
 }).array('images', 10); // Allow up to 10 images to be uploaded
-
-function checkFileType(file, cb) {
-  // Allowed file extensions
-  const filetypes = /jpeg|jpg|png|gif/;
-
-  // Check file extension
-  const extname = filetypes.test(file.originalname.toLowerCase());
-
-  // Check mime type
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb('Error: Images only!');
-  }
-}
 
 module.exports = upload;

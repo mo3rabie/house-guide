@@ -29,13 +29,11 @@ router.put('/', AuthMiddleware, UserController.updateUserData);
 router.get('/:userId', UserController.getUserDataById);
 
 // PUT update user data by ID
-//router.put('/:userId', UserController.updateUserDataById);
+router.put('/:userId', UserController.updateUserDataById);
 
-// Create a new chat
-router.post('/chats', AuthMiddleware, UserController.createChat);
 
-// Send a message in a chat
-router.post('/chats/:chatId/messages', AuthMiddleware, UserController.sendMessage);
+router.post('/bookmark/:houseId', AuthMiddleware, UserController.bookMark);
+
 
 // Upload profile picture
 router.post('/profile-picture', AuthMiddleware, upload.single('profilePicture'), UserController.uploadProfilePicture);

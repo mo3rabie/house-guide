@@ -45,35 +45,17 @@ const userSchema = new mongoose.Schema({
     },
     addedHouses: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'house'
+        ref: 'houses'
     }], // Reference to House collection
     bookMark: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'house'
+        ref: 'houses'
     }], // Reference to House collection this Book Marked by user 
-    // Chat related fields
-    chats: [{
-        // Each chat entry will have two participants (users)
-        participants: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        }],
-        // Array to store messages in the chat
-        messages: [{
-            // Each message will have a sender (user)
-            sender: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User'
-            },
-            // Message content
-            content: String,
-            // Timestamp of when the message was sent
-            timestamp: {
-                type: Date,
-                default: Date.now
-            }
-        }]
-    }]
+
+    lastLogout: {
+        type: Date
+    }
+
 });
 
 // Function to get user by ID
@@ -85,6 +67,12 @@ async function getUserById(userId) {
 async function updateUserDataById(userId, newData) {
     return await this.findByIdAndUpdate(userId, newData, { new: true });
 }
+
+userSchema.methods.logout = async function () {
+    // Update the lastLogout timestamp
+    this.lastLogout = new Date();
+    await this.save(); // Save the user document
+};
 
 // Add the functions to the schema as static methods
 userSchema.statics.getUserById = getUserById;

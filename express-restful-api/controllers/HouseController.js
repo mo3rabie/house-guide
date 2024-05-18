@@ -5,15 +5,36 @@ const House = require('../models/HouseModel');
 
 
 async function createHouse(req, res) {
-
   try {
-    const { body, files } = req; // Get the uploaded files
-    const house = await House.create({...body,ownerId: req.userId, images: files.map(file => file.path) });
-    res.status(201).json(house);
+    const { body } = req;
+    const files = req.files;
+
+    console.log('Request Body:', body);
+    console.log('Uploaded Files:', files);
+
+    if (!files || files.length === 0) {
+      throw new Error('No files uploaded');
+    }
+
+    // Remove 'uploads/' from the file paths
+    const images = files.map(file => file.path.replace(/^uploads[\/\\]/, ''));
+    console.log('Images Files:', images);
+
+    const house = await House.create({
+      ...body,
+      ownerId: req.userId,
+      images
+    });
+
+    console.log('New House:', house);
+    res.status(201).json({ message: 'House created successfully', house });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error creating house:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
+
+
 
 async function getAllHouses(req, res) {
   try {
@@ -51,13 +72,13 @@ async function deleteHouseById(req, res) {
 }
 
 async function getHouseByOwnerId(req, res) {
-  const { ownerId } = req.userId;
+  const { ownerId } = req.params;
   try {
-    const house = await House.findOne({ ownerId });
-    if (!house) {
+    const houses = await House.find({ ownerId });
+    if (!houses) {
       return res.status(404).json({ error: "House not found for the given owner ID" });
     }
-    res.json(house);
+    res.json(houses);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -8,15 +8,14 @@ const HouseController = require('../controllers/HouseController');
 const upload = require('../middlewares/upload');
 const AuthMiddleware = require('../middlewares/AuthMiddleware');
 
+router.use(handleValidationError); // Error handling middleware
 
 router.post('/',AuthMiddleware,upload,validateHouse,HouseController.createHouse);
 router.get('/', HouseController.getAllHouses);
 router.get('/:id', HouseController.getHouseById);
 router.delete('/:id', HouseController.deleteHouseById);
 router.get('/searchHouse/:address', HouseController.searchHouseByAddress);
+router.get('/owner/:ownerId', HouseController.getHouseByOwnerId);
 
-router.get('/owner',AuthMiddleware , HouseController.getHouseByOwnerId);
-
-router.use(handleValidationError); // Error handling middleware
 
 module.exports = router;
