@@ -146,7 +146,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                             CircleAvatar(
                               backgroundImage: user!['profilePicture'] != null
                                   ? NetworkImage(
-                                      'http://192.168.43.114:3000/${user['profilePicture']}')
+                                      'http://192.168.1.8:3000/${user['profilePicture']}')
                                   : null,
                               radius: 50,
                             ),
@@ -194,7 +194,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                               color: Colors.grey.shade200,
                               image: DecorationImage(
                                 image: NetworkImage(
-                                  'http://192.168.43.114:3000/${widget.item.images![index]}',
+                                  'http://192.168.1.8:3000/${widget.item.images![index]}',
                                 ),
                                 fit: BoxFit.cover,
                               ),

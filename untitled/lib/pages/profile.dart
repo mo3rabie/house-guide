@@ -197,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ? FileImage(_image!)
                       : (user!['profilePicture'] != null)
                           ? NetworkImage(
-                              'http://192.168.43.114:3000/${user!['profilePicture']}')
+                              'http://192.168.1.8:3000/${user!['profilePicture']}')
                           : const AssetImage('asset/images/person.jpg')
                               as ImageProvider<Object>?,
                 ),

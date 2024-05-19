@@ -59,7 +59,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                         CircleAvatar(
                           backgroundImage: user!['profilePicture'] != null
                               ? NetworkImage(
-                                  'http://192.168.43.114:3000/${user['profilePicture']}')
+                                  'http://192.168.1.8:3000/${user['profilePicture']}')
                               : null,
                           radius: 80,
                         ),

@@ -6,7 +6,7 @@ import 'package:untitled/pages/modules/house.dart';
 
 class HouseService {
   static final Dio _dio = Dio();
-  static const String baseUrl = 'http://192.168.43.114:3000/api/house';
+  static const String baseUrl = 'http://192.168.1.8:3000/api/house';
   static Future<List<House>> getAllHouses() async {
     try {
       final response = await Dio().get('$baseUrl/');

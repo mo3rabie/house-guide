@@ -35,8 +35,11 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255,0, 134, 172),
         body: ZoomDrawer(
           angle: 0.0,
+          controller: ZoomDrawerController(),////
           mainScreen: HousingPage(token: args['token']!),
-          menuScreen: MenuPage(token: args['token']!), // Pass the token value to MenuPage
+          menuScreen: MenuPage(token: args['token']!), 
+          showShadow: true,
+          style: DrawerStyle.defaultStyle,// Pass the token value to MenuPage
         ),
       );
     } else {

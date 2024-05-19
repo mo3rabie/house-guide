@@ -50,21 +50,25 @@ class _HousingPageState extends State<HousingPage> {
         elevation: 0.0,
         toolbarHeight: 80.0,
         backgroundColor: Colors.white,
-        leading: InkWell(
-          onTap: () {
-            // Handle button press
-          },
-          child: IconButton(
+        leading: IconButton(
+           onPressed: () {
+             if(ZoomDrawer.of(context)!.isOpen()) {
+              
+              ZoomDrawer.of(context)!.close(); 
+              //ZoomDrawer.of(context)!.toggle();
+            }else{
+            ZoomDrawer.of(context)!.open();
+            }
+           },
+
             icon: const Icon(
               Icons.menu,
               size: 32,
               color: Color.fromARGB(255, 0, 134, 172),
             ),
-            onPressed: () {
-              ZoomDrawer.of(context)!.toggle();
-            },
+            
           ),
-        ),
+        
         actions: [
           SizedBox(
             width: MediaQuery.of(context).size.width * .97,
