@@ -49,15 +49,21 @@ class _HousingPageState extends State<HousingPage> {
       appBar: AppBar(
         elevation: 0.0,
         toolbarHeight: 80.0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.menu,
-            size: 32,
-            color: Color.fromARGB(255, 0, 134, 172),
-          ),
-          onPressed: () {
-            ZoomDrawer.of(context)!.toggle();
+        backgroundColor: Colors.white,
+        leading: InkWell(
+          onTap: () {
+            // Handle button press
           },
+          child: IconButton(
+            icon: const Icon(
+              Icons.menu,
+              size: 32,
+              color: Color.fromARGB(255, 0, 134, 172),
+            ),
+            onPressed: () {
+              ZoomDrawer.of(context)!.toggle();
+            },
+          ),
         ),
         actions: [
           SizedBox(
@@ -68,10 +74,14 @@ class _HousingPageState extends State<HousingPage> {
           ),
         ],
       ),
-      body: Padding(
+      body: Container(
+        color: Colors.white,
         padding: const EdgeInsets.all(15.0),
+        
         child: SingleChildScrollView(
+          
           child: Column(
+            
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(
@@ -225,8 +235,6 @@ Widget _buildFilterOption(
     ),
   );
 }
-
-
 
 class CustomSearch extends SearchDelegate {
   final String token;
