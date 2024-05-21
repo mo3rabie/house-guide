@@ -44,31 +44,24 @@ class _HousingPageState extends State<HousingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0.0,
         toolbarHeight: 80.0,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         leading: IconButton(
-           onPressed: () {
-             if(ZoomDrawer.of(context)!.isOpen()) {
-              
-              ZoomDrawer.of(context)!.close(); 
-              //ZoomDrawer.of(context)!.toggle();
-            }else{
-            ZoomDrawer.of(context)!.open();
-            }
-           },
-
-            icon: const Icon(
-              Icons.menu,
-              size: 32,
-              color: Color.fromARGB(255, 0, 134, 172),
-            ),
-            
+          icon: Icon(
+            Icons.menu,
+            size: 32,
+            color: Color.fromARGB(255, 0, 134, 172),
           ),
-        
+          onPressed: () {
+            ZoomDrawer.of(context)!.toggle();
+          },
+        ),
         actions: [
           SizedBox(
             width: MediaQuery.of(context).size.width * .97,
@@ -79,22 +72,20 @@ class _HousingPageState extends State<HousingPage> {
         ],
       ),
       body: Container(
-        color: Colors.white,
+        color: theme.scaffoldBackgroundColor,
         padding: const EdgeInsets.all(15.0),
-        
         child: SingleChildScrollView(
-          
           child: Column(
-            
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(
                 height: 120,
               ),
-              const Text(
+              Text(
                 "Choose Your",
                 style: TextStyle(
-                  color: Color.fromARGB(255, 0, 134, 172),
+                  color:
+                 Color.fromARGB(255, 0, 134, 172),
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -239,6 +230,8 @@ Widget _buildFilterOption(
     ),
   );
 }
+
+
 
 class CustomSearch extends SearchDelegate {
   final String token;

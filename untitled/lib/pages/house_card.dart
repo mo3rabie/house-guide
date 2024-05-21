@@ -151,7 +151,7 @@ class _HouseCardState extends State<HouseCard> {
                   image: widget.house.images!.isNotEmpty
                       ? DecorationImage(
                           image: NetworkImage(
-                            'http://192.168.1.8:3000/${widget.house.images![0]}',
+                            'http://192.168.43.114:3000/${widget.house.images![0]}',
                           ),
                           fit: BoxFit.cover,
                         )

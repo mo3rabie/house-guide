@@ -7,10 +7,9 @@ import 'package:untitled/pages/setting.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(),
@@ -18,28 +17,27 @@ class Home extends StatelessWidget {
       themeMode: context.watch<ThemeProvider>().isDarkMode
           ? ThemeMode.dark
           : ThemeMode.light,
-         );
-        }
-      }
-
+    );
+  }
+}
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, String?>;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String?>;
 
-    if (args['token']!= null) {
+    if (args['token'] != null) {
       return Scaffold(
-        backgroundColor: const Color.fromARGB(255,0, 134, 172),
+        backgroundColor: const Color.fromARGB(255, 0, 134, 172),
         body: ZoomDrawer(
-          angle: 0.0,
-          controller: ZoomDrawerController(),////
+          angle: -30.0,
           mainScreen: HousingPage(token: args['token']!),
-          menuScreen: MenuPage(token: args['token']!), 
+          menuScreen: MenuPage(token: args['token']!), // Pass the token value to MenuPage
           showShadow: true,
-          style: DrawerStyle.defaultStyle,// Pass the token value to MenuPage
+          style: DrawerStyle.defaultStyle,
         ),
       );
     } else {

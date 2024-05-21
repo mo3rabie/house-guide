@@ -88,7 +88,7 @@ class _MenuPageState extends State<MenuPage> {
                                   radius: 50.0,
                                   backgroundImage: profilePictureUrl != null
                                       ? NetworkImage(
-                                          'http://192.168.1.8:3000/$profilePictureUrl')
+                                          'http://192.168.43.114:3000/$profilePictureUrl')
                                       : AssetImage('asset/images/person.jpg')
                                           as ImageProvider,
                                 ),
@@ -260,7 +260,9 @@ class _MenuPageState extends State<MenuPage> {
                 //////////////////////////////////////////////////
 // Dark Mode
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                          context.read<ThemeProvider>().toggleTheme();
+                  },
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
@@ -268,7 +270,9 @@ class _MenuPageState extends State<MenuPage> {
                         IconButton(
                           color: Colors.white,
                           icon: const Icon(Icons.dark_mode),
-                          onPressed: () {},
+                          onPressed: () {
+                          context.read<ThemeProvider>().toggleTheme();
+                          },
                         ),
                         Text(
                           'Dark Mode',

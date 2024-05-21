@@ -23,7 +23,6 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
   @override
   void initState() {
     super.initState();
-    // Check if the current house is bookmarked by the user
     checkIfBookmarked();
   }
 
@@ -39,7 +38,6 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
         throw Exception('Invalid user data format');
       }
     } catch (e) {
-      // Handle error
       if (kDebugMode) {
         print('Failed to fetch user data: $e');
       }
@@ -51,8 +49,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
 
   void handleBookmarkAction() async {
     try {
-      final result = await UserService.toggleBookmark(
-          widget.token, widget.item.houseId!);
+      final result = await UserService.toggleBookmark(widget.token, widget.item.houseId!);
       if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -62,7 +59,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
           ),
         );
         setState(() {
-          isBookmarked = !isBookmarked; // Toggle bookmark status
+          isBookmarked = !isBookmarked;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -74,10 +71,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
         );
       }
     } catch (error) {
-      if (error is DioError &&
-          error.response != null &&
-          error.response!.statusCode == 401) {
-        // Handle 401 Unauthorized error
+      if (error is DioError && error.response != null && error.response!.statusCode == 401) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Unauthorized: Please log in again.'),
@@ -85,16 +79,39 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
           ),
         );
       } else {
-        // Handle other errors
         if (kDebugMode) {
           print('Error handling bookmark action: $error');
         }
       }
     }
   }
-  
+
+  double parsePrice(String price) {
+    try {
+      return double.parse(price);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing price: $e');
+      }
+      return 0.0; // Default value in case of error
+    }
+  }
+
+  double calculateTransactionFee(double price) {
+    return price * 0.10; // 10% transaction fee
+  }
+
+  double calculateTotalCost(double price) {
+    return price + calculateTransactionFee(price);
+  }
+
   @override
   Widget build(BuildContext context) {
+    late String? widgetPrice = widget.item.price;
+    double price = parsePrice(widgetPrice!);
+    double transactionFee = calculateTransactionFee(price);
+    double totalCost = calculateTotalCost(price);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.item.name ?? 'House Details'),
@@ -111,19 +128,14 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-// Display user profile picture and name
                 FutureBuilder<Map<String, dynamic>>(
                   future: UserService().getUserById(widget.item.ownerId!),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      // Loading indicator while fetching data
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      // Handle error
-                      return Text(
-                          'Error fetching user data: ${snapshot.error}');
+                      return Text('Error fetching user data: ${snapshot.error}');
                     } else if (snapshot.data == null) {
-                      // Handle null data
                       return const Text('No user data available.');
                     }
 
@@ -134,8 +146,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                UserDetailsPage(userId: user['_id'], token: widget.token),
+                            builder: (context) => UserDetailsPage(userId: user['_id'], token: widget.token),
                           ),
                         );
                       },
@@ -145,8 +156,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                           children: [
                             CircleAvatar(
                               backgroundImage: user!['profilePicture'] != null
-                                  ? NetworkImage(
-                                      'http://192.168.1.8:3000/${user['profilePicture']}')
+                                  ? NetworkImage('http://192.168.43.114:3000/${user['profilePicture']}')
                                   : null,
                               radius: 50,
                             ),
@@ -166,7 +176,6 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                 ),
 
                 const SizedBox(height: 20.0),
-                // Display all house images in a ListView
                 SizedBox(
                   height: 300.0,
                   child: Center(
@@ -176,7 +185,6 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () {
-                            // Navigate to the FullScreenImagePage when image is tapped
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -193,9 +201,7 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                               borderRadius: BorderRadius.circular(20.0),
                               color: Colors.grey.shade200,
                               image: DecorationImage(
-                                image: NetworkImage(
-                                  'http://192.168.1.8:3000/${widget.item.images![index]}',
-                                ),
+                                image: NetworkImage('http://192.168.43.114:3000/${widget.item.images![index]}'),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -218,40 +224,36 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                     const SizedBox(width: 5.0),
                     Transform.scale(
                       scale: 1.5,
-                      child:                    IconButton(
-                      onPressed: handleBookmarkAction,
-                      icon: Icon(
-                        isBookmarked
-                            ? Icons.bookmark_added_outlined
-                            : Icons.bookmark_add_outlined,
+                      child: IconButton(
+                        onPressed: handleBookmarkAction,
+                        icon: Icon(
+                          isBookmarked
+                              ? Icons.bookmark_added_outlined
+                              : Icons.bookmark_add_outlined,
+                        ),
                       ),
-                    ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12.0),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined,
-                        color: Colors.blueGrey),
+                    const Icon(Icons.location_on_outlined, color: Colors.blueGrey),
                     const SizedBox(width: 10.0),
                     Text(
                       'Address: ${widget.item.address}',
-                      style: const TextStyle(
-                          fontSize: 24.0, color: Colors.blueGrey),
+                      style: const TextStyle(fontSize: 24.0, color: Colors.blueGrey),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12.0),
                 Row(
                   children: [
-                    const Icon(Icons.phone_callback_outlined,
-                        color: Colors.blueGrey),
+                    const Icon(Icons.phone_callback_outlined, color: Colors.blueGrey),
                     const SizedBox(width: 10.0),
                     Text(
                       'Phone: +2${widget.item.phone}',
-                      style: const TextStyle(
-                          fontSize: 24.0, color: Colors.blueGrey),
+                      style: const TextStyle(fontSize: 24.0, color: Colors.blueGrey),
                     ),
                   ],
                 ),
@@ -262,6 +264,19 @@ class _HouseDetailsPageState extends State<HouseDetailsPage> {
                       fontSize: 28.0,
                       fontWeight: FontWeight.bold,
                       color: Color.fromARGB(255, 0, 134, 172)),
+                ),
+                const SizedBox(height: 12.0),
+                Text(
+                  'Transaction Fee: $transactionFee L.E',
+                  style: const TextStyle(fontSize: 24.0, color: Colors.black),
+                ),
+                const SizedBox(height: 12.0),
+                Text(
+                  'Total Cost: $totalCost L.E/ Month',
+                  style: const TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
                 const SizedBox(height: 12.0),
                 Text(

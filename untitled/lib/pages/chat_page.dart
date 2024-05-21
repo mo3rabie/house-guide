@@ -90,7 +90,7 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               CircleAvatar(
                 backgroundImage: recipientProfilePicture.isNotEmpty
-                    ? NetworkImage('http://192.168.1.8:3000/$recipientProfilePicture')
+                    ? NetworkImage('http://192.168.43.114:3000/$recipientProfilePicture')
                     : const AssetImage('asset/images/person.jpg') as ImageProvider<Object>,
                 radius: 20,
               ),

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
 class UserService with ChangeNotifier {
-  static const String baseUrl = 'http://192.168.1.8:3000/api';
+  static const String baseUrl = 'http://192.168.43.114:3000/api';
 
   Future<void> createUserWithEmailAndPassword(String email, String password,
       String userName, String phoneNumber, BuildContext context) async {

@@ -162,7 +162,7 @@ class ChatListItem extends StatelessWidget {
               CircleAvatar(
                 radius: 40,
                 backgroundImage: profilePicture.isNotEmpty
-                    ? NetworkImage('http://192.168.1.8:3000/$profilePicture')
+                    ? NetworkImage('http://192.168.43.114:3000/$profilePicture')
                     : const AssetImage('asset/images/person.jpg') as ImageProvider<Object>,
               ),
               const SizedBox(width: 8),

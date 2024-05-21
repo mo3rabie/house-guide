@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 
 class ChatService with ChangeNotifier{
   final Dio _dio = Dio();
-  final String baseUrl = '192.168.1.8:3000/api';
+  final String baseUrl = 'http://192.168.43.114:3000/api';
 
 Future<String?> createChat(String token, String receiverId) async {
   try {

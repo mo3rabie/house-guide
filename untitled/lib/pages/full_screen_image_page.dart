@@ -38,7 +38,7 @@ class FullScreenImagePage extends StatelessWidget {
           child: Hero(
             tag: 'fullscreenImage', // Use a unique tag
             child: Image.network(
-              'http://192.168.1.8:3000/$imageUrl', // Update the URL here
+              'http://192.168.43.114:3000/$imageUrl', // Update the URL here
               fit: BoxFit.cover,
             ),
           ),
